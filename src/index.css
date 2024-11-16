@@ -1,0 +1,26 @@
+/* index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 폰트 및 스타일 설정은 @layer base로 이동 */
+@layer base {
+  :root {
+    font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply m-0 min-h-screen;
+  }
+}
+
+/* 필요한 커스텀 스타일은 @layer components로 */
+@layer components {
+  .btn {
+    @apply rounded-lg border border-transparent px-4 py-2 
+           font-medium cursor-pointer transition-colors
+           hover:border-blue-500 focus:outline-none;
+  }
+}
