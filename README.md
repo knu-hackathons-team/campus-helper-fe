@@ -12,3 +12,15 @@
 - Zustand (상태 관리)
 - React Query + Axios (API 통신)
 - Tailwind CSS + Emotion (스타일링)
+
+## 개발 도구 설정
+
+### VSCode 추천 익스텐션
+- ESLint
+- Prettier - Code formatter
+- PostCSS Language Support
+- Tailwind CSS IntelliSense
+
+### 코드 컨벤션
+- ESLint
+- Prettier
