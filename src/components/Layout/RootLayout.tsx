@@ -1,6 +1,6 @@
 // src/components/layout/RootLayout.tsx
 import { useEffect } from 'react'
-import { useThemeStore } from '../../store/useThemeStore'
+import { useThemeStore } from '@/store/useThemeStore'
 import ThemeToggle from '../common/ThemeToggle'
 
 interface RootLayoutProps {

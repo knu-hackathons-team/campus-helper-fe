@@ -1,3 +1,8 @@
+/*
+실제 소스 코드(src 폴더)에 대한 TypeScript 설정은 tsconfig.app.json에서 관리
+따라서 절대 경로(@) 설정도 tsconfig.app.json에 해야 함
+*/
+
 {
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
@@ -20,7 +25,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* 절대 경로 설정 추가 */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src"]
 }

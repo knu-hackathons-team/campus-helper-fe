@@ -1,7 +1,12 @@
+/*
+현재 프로젝트 구조가 tsconfig.json이 tsconfig.app.json과 tsconfig.node.json을 참조하는 구조로 되어있음
+*/
+
 {
   "files": [],
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  
 }
