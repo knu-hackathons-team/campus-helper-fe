@@ -1,8 +1,6 @@
 // src/components/layout/RootLayout.tsx
 import { useEffect } from 'react'
 import { useThemeStore } from '@/store/useThemeStore'
-import ThemeToggle from '../common/ThemeToggle'
-
 interface RootLayoutProps {
   children: React.ReactNode
 }
@@ -15,9 +13,8 @@ function RootLayout({ children }: RootLayoutProps) {
   }, [isDarkMode])
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
+  <div className="min-h-screen bg-gray-100 dark:bg-gray-900 transition-colors">
       {children}
-      <ThemeToggle />
     </div>
   )
 }

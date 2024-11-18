@@ -16,9 +16,9 @@ const MyPage = () => <div>마이페이지</div>;
 function App() {
   return (
     <BrowserRouter>
-      <RootLayout>
-      <Navbar />  {/* 추가 */}
-
+      <div style={{ height: '100vh' }} className="bg-gray-100 dark:bg-gray-900 transition-colors pt-16">
+        <Navbar />
+        <RootLayout>
         <Routes>
           {/* 메인 */}
           <Route path="/" element={<Home />} />
@@ -35,7 +35,8 @@ function App() {
           {/* 마이페이지 */}
           <Route path="/mypage" element={<MyPage />} />
         </Routes>
-      </RootLayout>
+        </RootLayout>
+      </div>
     </BrowserRouter>
   );
 }
