@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import styled from '@emotion/styled';
 import { Users, Plus, ChevronUp } from 'lucide-react';
 import { mockRequests } from '@/mocks/requests';
@@ -40,16 +42,20 @@ const RequestList = () => {
     setSelectedId(selectedId === id ? null : id);
   };
 
+  const navigate = useNavigate();
+
   const handleAccept = (requestId: string) => {
-    window.location.href = `/requests/${requestId}/accept`;
+    navigate(`/requests/${requestId}/accept`);
   };
 
   const handleJoin = (requestId: string) => {
-    window.location.href = `/requests/${requestId}/join`;
+    navigate(`/requests/${requestId}/join`);
   };
 
-   // 거리순 정렬된 요청 목록
- const sortedRequests = [...mockRequests].sort((a, b) => a.distance - b.distance);
+  // 거리순 정렬된 요청 목록
+  const sortedRequests = [...mockRequests].sort(
+    (a, b) => a.distance - b.distance,
+  );
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 mb-20">
@@ -63,7 +69,7 @@ const RequestList = () => {
             <RequestCard
               onClick={() => handleCardClick(request.id)}
               className={`bg-white dark:bg-gray-800 rounded-lg ${selectedId === request.id ? '' : 'shadow-lg'} p-4 cursor-pointer`}
-              >
+            >
               {/* 카드 내용*/}
               <div className="flex justify-between items-start mb-2">
                 <div>
@@ -141,7 +147,7 @@ const RequestList = () => {
       </div>
 
       <FloatingButton
-        onClick={() => (window.location.href = '/requests/new')}
+        onClick={() => navigate('/requests/new')}
         className="bg-gray-800 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 text-white px-6 py-3 rounded-full shadow-lg inline-flex items-center gap-2"
       >
         <span>글쓰기</span>
