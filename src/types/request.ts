@@ -12,4 +12,6 @@ export interface Request {
   baseFunding: number;     // 기본 펀딩 금액
   totalFunding: number;    // 누적된 총 금액
   participants: number;        // 참여자 수
+  latitude: number,    //위도
+  longitude: number,    //경도
 }

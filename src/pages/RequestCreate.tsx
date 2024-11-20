@@ -1,6 +1,10 @@
+// 현재는 로컬 스토리지에 저장하지만, 실제로는 API를 이용해 백엔드와 통신해야 함
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
+import MapComponent from '@/components/common/Map/MapComponent';
+
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
@@ -94,6 +98,15 @@ const RequestCreate = () => {
               required
             />
           </FormField>
+
+          <div>
+      <h1>경로 찾기</h1>
+      {/* MapComponent 사용 */}
+      <MapComponent
+        start={{ latitude: 35.8892, longitude: 128.6109 }} // 출발지
+        end={{ latitude: 35.8895, longitude: 128.6123 }}   // 도착지
+      />
+    </div>
 
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">

@@ -52,11 +52,17 @@ const RequestList = () => {
     navigate(`/requests/${requestId}/join`);
   };
 
+  // localStorage에서 데이터 가져오기
+  const savedRequests = JSON.parse(localStorage.getItem('requests') || '[]');
+  const allRequests = [...mockRequests, ...savedRequests];
+
   // 거리순 정렬된 요청 목록
-  const sortedRequests = [...mockRequests].sort(
+  const sortedRequests = [...allRequests].sort(
     (a, b) => a.distance - b.distance,
   );
 
+
+  
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 mb-20">
       <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">

@@ -8,7 +8,7 @@ const NavContainer = styled.nav`
   top: 0;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 10;
   transition: all 0.3s ease;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 `;

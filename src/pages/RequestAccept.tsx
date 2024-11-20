@@ -1,10 +1,14 @@
 import React from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { mockRequests } from '@/mocks/requests';
+import MapComponent from '@/components/common/Map/MapComponent';
 
 const RequestAccept = () => {
   const { id } = useParams();
-  const request = mockRequests.find(req => req.id === id);
+  const request = mockRequests.find((req) => req.id === id);
+
+  const [distance, setDistance] = useState<number | null>(null);
 
   if (!request) {
     return <div>요청을 찾을 수 없습니다.</div>;
@@ -21,12 +25,22 @@ const RequestAccept = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {request.title}
           </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            {request.content}
-          </p>
+          <p className="text-gray-600 dark:text-gray-300">{request.content}</p>
           <div className="mt-4 text-blue-600 dark:text-blue-400 font-medium">
             보상: {request.baseFunding.toLocaleString()}원
           </div>
+        </div>
+
+        <div>
+          <h1>경로 찾기</h1>
+          {/* MapComponent 사용 */}
+          <MapComponent
+            start={{
+              latitude: 35.8915608945486,
+              longitude: 128.61502175709214,
+            }} // 출발지
+            end={{ latitude: 35.88890257741554, longitude: 128.61300765563905 }} // 도착지
+          />
         </div>
 
         {/* 수행 동의 사항 */}

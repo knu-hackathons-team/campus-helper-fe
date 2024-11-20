@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { mockRequests } from '@/mocks/requests';
 import { Users } from 'lucide-react';
+import MapComponent from '@/components/common/Map/MapComponent';
 
 const RequestJoin = () => {
   const { id } = useParams();
@@ -26,7 +27,14 @@ const RequestJoin = () => {
             {request.content}
           </p>
         </div>
-
+        <div>
+      <h1>경로 찾기</h1>
+      {/* MapComponent 사용 */}
+      <MapComponent
+        start={{ latitude: 35.8892, longitude: 128.6109 }} // 출발지
+        end={{ latitude: 35.8895, longitude: 128.6123 }}   // 도착지
+      />
+    </div>
         {/* 펀딩 현황 */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
           <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
