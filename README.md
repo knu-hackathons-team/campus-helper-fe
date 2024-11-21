@@ -89,6 +89,7 @@ campus-helper-fe
 ├─ README.md
 ├─ src
 │  ├─ api
+│  │  ├─ auth.ts
 │  │  ├─ axios.ts
 │  │  └─ fetchRoute.tsx
 │  ├─ App.css
@@ -103,9 +104,12 @@ campus-helper-fe
 │  │  │     ├─ BaseMapComponent.tsx
 │  │  │     ├─ LocationSelectMapComponent.tsx
 │  │  │     └─ RouteMapComponent.tsx
-│  │  └─ Layout
-│  │     ├─ Navbar.tsx
-│  │     └─ RootLayout.tsx
+│  │  ├─ Layout
+│  │  │  ├─ Navbar.tsx
+│  │  │  └─ RootLayout.tsx
+│  │  └─ user
+│  │     ├─ UserInfo.tsx
+│  │     └─ UserInfoUpdater.tsx
 │  ├─ hooks
 │  │  ├─ useDistance.ts
 │  │  └─ useRequest.ts
@@ -115,11 +119,14 @@ campus-helper-fe
 │  │  └─ requests.ts
 │  ├─ pages
 │  │  ├─ Home.tsx
+│  │  ├─ Login.tsx
 │  │  ├─ RequestAccept.tsx
 │  │  ├─ RequestCreate.tsx
 │  │  ├─ RequestJoin.tsx
-│  │  └─ RequestList.tsx
+│  │  ├─ RequestList.tsx
+│  │  └─ SignUp.tsx
 │  ├─ store
+│  │  ├─ useAuthStore.ts
 │  │  └─ useThemeStore.ts
 │  ├─ types
 │  │  ├─ Location.ts

@@ -15,4 +15,6 @@ export interface Request {
   totalFunding: number;    // 누적된 총 금액
   participants: number;        // 참여자 수
   location: Location;  // 위치
+  contentLastingTime: number, // 컨텐츠 지속시간
+
 }

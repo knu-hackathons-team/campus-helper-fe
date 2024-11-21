@@ -1,19 +1,21 @@
 import axios from 'axios';
+import useAuthStore from '../store/useAuthStore';
 
-// 기본 axios 인스턴스 생성
-const api = axios.create({
-  baseURL: 'http://localhost:8080/api', // 백엔드 서버 주소
-  timeout: 5000,
+const BASE_URL = 'http://13.209.249.238';
+
+const axiosInstance = axios.create({
+  baseURL: BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// 요청 인터셉터
-api.interceptors.request.use(
+// 요청 인터셉터 - 모든 요청에 토큰 추가
+axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = useAuthStore.getState().token;
     if (token) {
+      // Bearer 프리픽스 추가
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -23,17 +25,4 @@ api.interceptors.request.use(
   }
 );
 
-// 응답 인터셉터
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    // 401 에러 처리 (인증 실패)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
-  }
-);
-
-export default api;
+export default axiosInstance;

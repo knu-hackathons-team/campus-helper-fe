@@ -19,6 +19,7 @@ export const mockRequests: Request[] = [
       latitude: 35.88750790419784,
       longitude: 128.6128520146832,
     },
+    contentLastingTime: 300,
   },
   {
     id: '2',
@@ -38,6 +39,7 @@ export const mockRequests: Request[] = [
       latitude: 35.89254172305258,
       longitude: 128.61244470031122,
     },
+    contentLastingTime: 300,
   },
   {
     id: '3',
@@ -57,5 +59,6 @@ export const mockRequests: Request[] = [
       latitude: 35.89241766454495,
       longitude: 128.6096015659663,
     },
+    contentLastingTime: 300,
   },
 ];

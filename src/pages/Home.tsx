@@ -1,8 +1,9 @@
 // src/pages/Home.tsx
 /** @jsxImportSource @emotion/react */
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
+import useAuthStore from '../store/useAuthStore';
 
 // Emotion으로 커스텀 스타일링이 필요한 부분만 정의합니다.
 const ButtonGroup = styled.div`
@@ -19,6 +20,16 @@ const linkStyles = css`
 
 // Home 컴포넌트 정의
 function Home() {
+  const navigate = useNavigate();
+  const userInfo = useAuthStore((state) => state.userInfo);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const logout = useAuthStore((state) => state.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 transition-colors">
       <div className="max-w-7xl mx-auto">
@@ -30,22 +41,60 @@ function Home() {
           <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
             다른 학생들과 함께 캠퍼스 생활을 더 쉽게 만들어보세요
           </p>
-          <ButtonGroup>
-            <Link
-              to="/requests/new"
-              css={linkStyles}
-              className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
-            >
-              도움 요청하기
-            </Link>
-            <Link
-              to="/requests"
-              css={linkStyles}
-              className="bg-white text-blue-500 px-6 py-2 rounded-lg border border-blue-500 hover:bg-blue-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
-            >
-              요청 목록 보기
-            </Link>
-          </ButtonGroup>
+          {isAuthenticated ? (
+            // 로그인된 경우
+            <div className="space-y-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                안녕하세요, {userInfo?.nickname}님!
+              </p>
+              <ButtonGroup>
+                <Link
+                  to="/requests/new"
+                  css={linkStyles}
+                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+                >
+                  도움 요청하기
+                </Link>
+                <Link
+                  to="/requests"
+                  css={linkStyles}
+                  className="bg-white text-blue-500 px-6 py-2 rounded-lg border border-blue-500 hover:bg-blue-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  요청 목록 보기
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  css={linkStyles}
+                  className="bg-white text-gray-600 px-6 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors"
+                >
+                  로그아웃
+                </button>
+              </ButtonGroup>
+            </div>
+          ) : (
+            // 로그인되지 않은 경우
+            <div className="space-y-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                서비스 이용을 위해 로그인해주세요
+              </p>
+              <ButtonGroup>
+                <Link
+                  to="/login"
+                  css={linkStyles}
+                  className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600"
+                >
+                  로그인
+                </Link>
+                <Link
+                  to="/signup"
+                  css={linkStyles}
+                  className="bg-white text-blue-500 px-6 py-2 rounded-lg border border-blue-500 hover:bg-blue-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  회원가입
+                </Link>
+              </ButtonGroup>
+            </div>
+          )}
         </div>
 
         {/* 기능 소개 섹션 */}
