@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import MapComponent from '@/components/common/Map/MapComponent';
-
+import LocationSelectMapComponent from '@/components/common/Map/LocationSelectMapComponent';
+import { Location } from '@/types/Location';
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
@@ -12,31 +12,49 @@ const FormField = styled.div`
 
 const RequestCreate = () => {
   const navigate = useNavigate();
+  const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     baseFunding: '',
     allowGroupFunding: false,
-    college: 'IT대학' // 기본값
+    college: 'IT대학', // 기본값
+    location: null as Location | null
+
   });
+
+  const handleLocationSelect = (location: Location) => {
+    setCurrentLocation(location);
+    setFormData(prev => ({
+      ...prev,
+      location
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!currentLocation) {
+      alert('위치 정보가 필요합니다.');
+      return;
+    }
+
     const newRequest = {
-      id: (Date.now().toString()), // 임시 ID 생성
-      author: "현재사용자", // 실제로는 로그인된 사용자 정보 사용
-      title: formData.title,
-      content: formData.content,
-      distance: 0, // 현재 위치 기반으로 계산 필요
-      status: "open" as const,
-      createdAt: new Date().toISOString(),
-      allowGroupFunding: formData.allowGroupFunding,
-      baseFunding: parseInt(formData.baseFunding),
-      totalFunding: parseInt(formData.baseFunding),
-      participants: 1,
-      college: formData.college
-    };
+      id: (Date.now().toString()),        // 현재 시간을 ID로 사용
+      author: "현재사용자",                // 임시 사용자명
+      title: formData.title,              // 입력한 제목
+      content: formData.content,          // 입력한 내용
+      location: currentLocation,          // 지도에서 선택한 위치
+      distance: 0,                        // 거리 (추후 계산 필요)
+      status: "open",                     // 초기 상태는 '열림'
+      createdAt: new Date().toISOString(),// 현재 시간
+      allowGroupFunding: formData.allowGroupFunding,  // 그룹 펀딩 허용 여부
+      baseFunding: parseInt(formData.baseFunding),    // 기본 금액
+      totalFunding: parseInt(formData.baseFunding),   // 초기 총액은 기본 금액과 동일
+      participants: 1,                    // 초기 참여자 수 1명
+      college: formData.college           // 선택한 단과대학
+  };
 
     // 로컬 스토리지에 저장된 기존 요청 목록 가져오기
     const existingRequests = JSON.parse(localStorage.getItem('requests') || '[]');
@@ -99,14 +117,8 @@ const RequestCreate = () => {
             />
           </FormField>
 
-          <div>
-      <h1>경로 찾기</h1>
-      {/* MapComponent 사용 */}
-      <MapComponent
-        start={{ latitude: 35.8892, longitude: 128.6109 }} // 출발지
-        end={{ latitude: 35.8895, longitude: 128.6123 }}   // 도착지
-      />
-    </div>
+          <LocationSelectMapComponent onLocationSelect={handleLocationSelect} />
+
 
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -151,6 +163,9 @@ const RequestCreate = () => {
               작성하기
             </button>
           </div>
+
+
+
         </form>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import styled from '@emotion/styled';
 import { Menu, X, Home, Bell, User, Sun, Moon } from 'lucide-react';
 import { useThemeStore } from '@/store/useThemeStore';

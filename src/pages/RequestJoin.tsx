@@ -1,21 +1,50 @@
-import React from 'react';
-import { useParams } from 'react-router-dom';
-import { mockRequests } from '@/mocks/requests';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
-import MapComponent from '@/components/common/Map/MapComponent';
+import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
+import { useRequest } from '@/hooks/useRequest';
+import { EstimatedInfo } from '@/components/common/EstimatedInfo';
 
 const RequestJoin = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
-  const request = mockRequests.find(req => req.id === id);
+  const { request, isLoading, error, currentLocation } = useRequest(id);
 
-  if (!request) {
-    return <div>요청을 찾을 수 없습니다.</div>;
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto py-6 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="text-center text-gray-600 dark:text-gray-300">
+            로딩 중...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !request) {
+    return (
+      <div className="max-w-2xl mx-auto py-6 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="text-center text-gray-600 dark:text-gray-300">
+            {error || '요청을 찾을 수 없습니다.'}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => navigate('/requests')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              목록으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        {/* 기존 요청 정보 */}
+        {/* 요청 정보 */}
         <div className="mb-6">
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {request.college} · {request.author}
@@ -27,14 +56,36 @@ const RequestJoin = () => {
             {request.content}
           </p>
         </div>
-        <div>
-      <h1>경로 찾기</h1>
-      {/* MapComponent 사용 */}
-      <MapComponent
-        start={{ latitude: 35.8892, longitude: 128.6109 }} // 출발지
-        end={{ latitude: 35.8895, longitude: 128.6123 }}   // 도착지
-      />
-    </div>
+
+        {/* 지도 섹션 */}
+        <div className="mb-6">
+
+          {currentLocation && request.location && (
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <RouteMapComponent
+                start={currentLocation}
+                end={request.location}
+              />
+            </div>
+          )}
+          {!currentLocation && (
+            <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+                경로를 확인하려면 위치 정보 접근을 허용해주세요.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* 예상 정보 */}
+        {currentLocation && request.location && (
+          <EstimatedInfo
+            currentLocation={currentLocation}
+            targetLocation={request.location}
+            className="mb-6"
+          />
+        )}
+
         {/* 펀딩 현황 */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
           <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
@@ -54,20 +105,7 @@ const RequestJoin = () => {
           </div>
         </div>
 
-        {/* 펀딩 참여 안내 */}
         <div className="space-y-4 mb-6">
-          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-              펀딩 참여 안내
-            </h2>
-            <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm space-y-2">
-              <li>최초 요청자가 설정한 금액({request.baseFunding.toLocaleString()}원)으로 참여할 수 있습니다.</li>
-              <li>요청 달성 시 공유된 정보를 모든 참여자가 확인할 수 있습니다.</li>
-              <li>펀딩 완료 후 취소는 불가능합니다.</li>
-              <li>요청이 실패할 경우 전액 환불됩니다.</li>
-            </ul>
-          </div>
-
           {/* 결제 정보 */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
@@ -80,15 +118,37 @@ const RequestJoin = () => {
           </div>
         </div>
 
+        {/* 펀딩 참여 안내 */}
+        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+            펀딩 참여 안내
+          </h2>
+          <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm space-y-2">
+            <li>
+              최초 요청자가 설정한 금액({request.baseFunding.toLocaleString()}
+              원)으로 참여할 수 있습니다.
+            </li>
+            <li>
+              요청 달성 시 공유된 정보를 모든 참여자가 확인할 수 있습니다.
+            </li>
+            <li>펀딩 완료 후 취소는 불가능합니다.</li>
+            <li>요청이 실패할 경우 전액 환불됩니다.</li>
+          </ul>
+        </div>
+
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-3">
           <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
           >
             뒤로가기
           </button>
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
+            disabled={!currentLocation}
+          >
+            <Users size={16} />
             펀딩하기
           </button>
         </div>

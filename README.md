@@ -71,3 +71,65 @@
 
 - ESLint
 - Prettier
+
+참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
+
+```
+campus-helper-fe
+├─ .eslintrc.cjs
+├─ .gitignore
+├─ .prettierrc
+├─ eslint.config.js
+├─ index.html
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ vite.svg
+├─ README.md
+├─ src
+│  ├─ api
+│  │  ├─ axios.ts
+│  │  └─ fetchRoute.tsx
+│  ├─ App.css
+│  ├─ App.tsx
+│  ├─ assets
+│  │  └─ react.svg
+│  ├─ components
+│  │  ├─ common
+│  │  │  ├─ Distance.tsx
+│  │  │  ├─ EstimatedInfo.tsx
+│  │  │  └─ Map
+│  │  │     ├─ BaseMapComponent.tsx
+│  │  │     ├─ LocationSelectMapComponent.tsx
+│  │  │     └─ RouteMapComponent.tsx
+│  │  └─ Layout
+│  │     ├─ Navbar.tsx
+│  │     └─ RootLayout.tsx
+│  ├─ hooks
+│  │  ├─ useDistance.ts
+│  │  └─ useRequest.ts
+│  ├─ index.css
+│  ├─ main.tsx
+│  ├─ mocks
+│  │  └─ requests.ts
+│  ├─ pages
+│  │  ├─ Home.tsx
+│  │  ├─ RequestAccept.tsx
+│  │  ├─ RequestCreate.tsx
+│  │  ├─ RequestJoin.tsx
+│  │  └─ RequestList.tsx
+│  ├─ store
+│  │  └─ useThemeStore.ts
+│  ├─ types
+│  │  ├─ Location.ts
+│  │  └─ request.ts
+│  ├─ utils
+│  └─ vite-env.d.ts
+├─ tailwind.config.js
+├─ tsconfig.app.json
+├─ tsconfig.json
+├─ tsconfig.node.json
+└─ vite.config.ts
+
+```

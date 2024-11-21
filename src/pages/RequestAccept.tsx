@@ -1,23 +1,49 @@
-import React from 'react';
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { mockRequests } from '@/mocks/requests';
-import MapComponent from '@/components/common/Map/MapComponent';
+import { useParams, useNavigate } from 'react-router-dom';
+import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
+import { useRequest } from '@/hooks/useRequest';
+import { EstimatedInfo } from '@/components/common/EstimatedInfo';
 
 const RequestAccept = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
-  const request = mockRequests.find((req) => req.id === id);
+  const { request, isLoading, error, currentLocation } = useRequest(id);
 
-  const [distance, setDistance] = useState<number | null>(null);
+  if (isLoading) {
+    return (
+      <div className="max-w-2xl mx-auto py-6 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="text-center text-gray-600 dark:text-gray-300">
+            로딩 중...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  if (!request) {
-    return <div>요청을 찾을 수 없습니다.</div>;
+  if (error || !request) {
+    return (
+      <div className="max-w-2xl mx-auto py-6 px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          <div className="text-center text-gray-600 dark:text-gray-300">
+            {error || '요청을 찾을 수 없습니다.'}
+          </div>
+          <div className="mt-4 flex justify-center">
+            <button
+              onClick={() => navigate('/requests')}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              목록으로 돌아가기
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-        {/* 기존 요청 정보 */}
+        {/* 요청 정보 헤더 */}
         <div className="mb-6">
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
             {request.college} · {request.author}
@@ -31,20 +57,46 @@ const RequestAccept = () => {
           </div>
         </div>
 
-        <div>
-          <h1>경로 찾기</h1>
-          {/* MapComponent 사용 */}
-          <MapComponent
-            start={{
-              latitude: 35.8915608945486,
-              longitude: 128.61502175709214,
-            }} // 출발지
-            end={{ latitude: 35.88890257741554, longitude: 128.61300765563905 }} // 도착지
-          />
+        {/* 지도 섹션 */}
+        <div className="mb-6">
+
+          {currentLocation && request.location && (
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <RouteMapComponent
+                start={currentLocation}
+                end={request.location}
+              />
+            </div>
+          )}
+          {!currentLocation && (
+            <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+                경로를 확인하려면 위치 정보 접근을 허용해주세요.
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* 수행 동의 사항 */}
+        {/* 예상 소요 시간 및 거리 */}
+        {currentLocation && request.location && (
+          <EstimatedInfo
+            currentLocation={currentLocation}
+            targetLocation={request.location}
+            className="mb-6"
+          />
+        )}
+
         <div className="space-y-4 mb-6">
+          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
+              요청자 연락처
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
+              수행 수락 후 요청자의 연락처가 공개됩니다.
+            </p>
+          </div>
+
+          {/* 수행 동의 사항 */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
               수행 전 확인사항
@@ -56,26 +108,20 @@ const RequestAccept = () => {
               <li>부적절한 수행 시 제재를 받을 수 있습니다.</li>
             </ul>
           </div>
-
-          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-              요청자 연락처
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
-              수행 수락 후 요청자의 연락처가 공개됩니다.
-            </p>
-          </div>
         </div>
 
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-3">
           <button
-            onClick={() => window.history.back()}
-            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            onClick={() => navigate(-1)}
+            className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
           >
             뒤로가기
           </button>
-          <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
+            disabled={!currentLocation}
+          >
             수락하기
           </button>
         </div>
