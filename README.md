@@ -89,9 +89,22 @@ campus-helper-fe
 ├─ README.md
 ├─ src
 │  ├─ api
-│  │  ├─ auth.ts
-│  │  ├─ axios.ts
-│  │  └─ fetchRoute.tsx
+│  │  ├─ auth
+│  │  │  ├─ constants.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
+│  │  ├─ fetchRoute.tsx
+│  │  ├─ lib
+│  │  │  └─ axios.ts
+│  │  ├─ request
+│  │  │  ├─ constants.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
+│  │  ├─ types
+│  │  │  └─ common.ts
+│  │  └─ _api_old
+│  │     ├─ auth_old.ts
+│  │     └─ axios_old.ts
 │  ├─ App.css
 │  ├─ App.tsx
 │  ├─ assets
@@ -129,7 +142,12 @@ campus-helper-fe
 │  │  ├─ useAuthStore.ts
 │  │  └─ useThemeStore.ts
 │  ├─ types
+│  │  ├─ common
+│  │  │  └─ index.ts
 │  │  ├─ Location.ts
+│  │  ├─ request
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
 │  │  └─ request.ts
 │  ├─ utils
 │  └─ vite-env.d.ts
