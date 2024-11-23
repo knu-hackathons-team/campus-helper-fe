@@ -7,7 +7,7 @@ interface LocationSelectProps {
   onLocationSelect: (location: { latitude: number; longitude: number }) => void;
 }
 
-const LocationSelectMapComponent: React.FC<LocationSelectProps> = ({ onLocationSelect }) => {
+const LocationSelectMapComponent: React.FC<LocationSelectProps> = React.memo(({ onLocationSelect }) => {  // React.memo 추가
   const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([35.8892, 128.6109]); // 초기 중심점
@@ -86,6 +86,6 @@ const LocationSelectMapComponent: React.FC<LocationSelectProps> = ({ onLocationS
       </div>
     </div>
   );
-};
+});
 
 export default LocationSelectMapComponent;

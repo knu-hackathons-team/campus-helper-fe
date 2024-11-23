@@ -1,5 +1,5 @@
 import axios from 'axios';
-import axiosInstance from './axios';
+import axiosInstance from './axios_old';
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 

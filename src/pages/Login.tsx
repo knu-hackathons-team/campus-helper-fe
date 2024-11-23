@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import axios from 'axios';
 import useAuthStore from '../store/useAuthStore';
-import { loginMember } from '../api/auth';
+import { authApi } from '@/api/auth';
+import type { LoginFormData } from '@/api/auth/types'; // LoginFormData 타입도 auth 도메인으로 이동
+import { ApiError } from '@/api/lib/axios';
 
 const FormContainer = styled.div`
   max-width: 400px;
@@ -24,16 +25,11 @@ const inputStyle = css`
   }
 `;
 
-interface LoginFormData {
-  loginId: string;
-  password: string;
-}
-
 function Login() {
   const navigate = useNavigate();
   const setToken = useAuthStore((state) => state.setToken);
   const fetchUserInfo = useAuthStore((state) => state.fetchUserInfo);
-  
+
   const [formData, setFormData] = useState<LoginFormData>({
     loginId: '',
     password: '',
@@ -47,28 +43,30 @@ function Login() {
   
     try {
       setIsLoading(true);
-      
-      const response = await loginMember(formData);
-      console.log('로그인 응답:', response);  // 응답 확인
   
-      if (response.jwt) {  // token이 아닌 jwt로 확인
+      const response = await authApi.login(formData);
+  
+      // 개발 환경에서만 로그 출력
+      if (process.env.NODE_ENV === 'development') {
+        console.log('로그인 응답:', response);
+      }
+  
+      if (response.jwt) {
         setToken(response.jwt);
-        console.log('저장된 토큰:', useAuthStore.getState().token);  // 저장된 토큰 확인
-        
-        // 사용자 정보 가져오기
-        await fetchUserInfo();
   
+        if (process.env.NODE_ENV === 'development') {
+          console.log('저장된 토큰:', useAuthStore.getState().token);
+        }
+  
+        await fetchUserInfo();
         navigate('/');
       } else {
-        setError('로그인 응답에 토큰이 없습니다.');
+        setError('로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (err) {
-      if (axios.isAxiosError(err)) {
-        const errorMessage =
-          err.response?.data?.message ||
-          '로그인에 실패했습니다. 다시 시도해주세요.';
-        setError(errorMessage);
-        console.error('로그인 에러:', err.response?.data);
+      if (err instanceof ApiError) {
+        setError(err.message || '로그인에 실패했습니다. 다시 시도해주세요.');
+        console.error('로그인 에러:', err.data);
       } else {
         setError('로그인에 실패했습니다. 다시 시도해주세요.');
         console.error('로그인 에러:', err);

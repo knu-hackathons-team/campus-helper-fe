@@ -1,74 +1,106 @@
-// 현재는 로컬 스토리지에 저장하지만, 실제로는 API를 이용해 백엔드와 통신해야 함
-
-import React, { useState } from 'react';
+// src/pages/RequestCreate.tsx
+import React, { useState,useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
+import { requestApi } from '@/api/request';
+import type { CreateRequestDto, RequestCategory } from '@/api/request/types';
+import { ApiError } from '@/api/lib/axios';
+import useAuthStore from '@/store/useAuthStore';
 import LocationSelectMapComponent from '@/components/common/Map/LocationSelectMapComponent';
-import { Location } from '@/types/Location';
+import type { Location } from '@/types/Location';
+import { COLLEGES } from '@/api/auth/constants';
+import type { College } from '@/api/auth/types';
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
 `;
 
+const DEFAULT_REMAINING_TIME = 3600; // 1시간
+
 const RequestCreate = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    baseFunding: '',
+    category: 'HELP' as RequestCategory,
     allowGroupFunding: false,
-    college: 'IT대학', // 기본값
-    location: null as Location | null
-
+    college: 'IT대학' as College, // College 타입 명시
+    reward: '',
+    ramaningTime: DEFAULT_REMAINING_TIME.toString(),
   });
 
-  const handleLocationSelect = (location: Location) => {
+  // onLocationSelect 함수를 useCallback으로 감싸기
+  const handleLocationSelect = useCallback((location: Location) => {
     setCurrentLocation(location);
-    setFormData(prev => ({
-      ...prev,
-      location
-    }));
+    setError(null);
+  }, []); // 의존성 배열이 비어있으므로 함수가 재생성되지 않음
+
+  const validateForm = () => {
+    if (!isAuthenticated) {
+      setError('로그인이 필요합니다.');
+      return false;
+    }
+    if (!currentLocation) {
+      setError('위치를 선택해주세요.');
+      return false;
+    }
+    if (!formData.title.trim()) {
+      setError('제목을 입력해주세요.');
+      return false;
+    }
+    if (!formData.content.trim()) {
+      setError('내용을 입력해주세요.');
+      return false;
+    }
+    if (!formData.reward || parseInt(formData.reward) < 100) {
+      setError('올바른 보상금을 입력해주세요. (최소 100)');
+      return false;
+    }
+    return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
-    if (!currentLocation) {
-      alert('위치 정보가 필요합니다.');
+    if (!validateForm()) {
       return;
     }
 
-    const newRequest = {
-      id: (Date.now().toString()),        // 현재 시간을 ID로 사용
-      author: "현재사용자",                // 임시 사용자명
-      title: formData.title,              // 입력한 제목
-      content: formData.content,          // 입력한 내용
-      location: currentLocation,          // 지도에서 선택한 위치
-      distance: 0,                        // 거리 (추후 계산 필요)
-      status: "open",                     // 초기 상태는 '열림'
-      createdAt: new Date().toISOString(),// 현재 시간
-      allowGroupFunding: formData.allowGroupFunding,  // 그룹 펀딩 허용 여부
-      baseFunding: parseInt(formData.baseFunding),    // 기본 금액
-      totalFunding: parseInt(formData.baseFunding),   // 초기 총액은 기본 금액과 동일
-      participants: 1,                    // 초기 참여자 수 1명
-      college: formData.college           // 선택한 단과대학
+    setIsSubmitting(true);
+
+    try {
+      const requestData: CreateRequestDto = {
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        category: formData.category,
+        allowGroupFunding: formData.allowGroupFunding,
+        latitude: currentLocation!.latitude,
+        longitude: currentLocation!.longitude,
+        ramaningTime: parseInt(formData.ramaningTime),
+        reward: parseInt(formData.reward)
+      };
+
+      await requestApi.createRequest(requestData);
+      navigate('/requests');
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setError(error.message);
+      } else {
+        setError('요청 생성 중 오류가 발생했습니다.');
+      }
+      console.error('Failed to create request:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-    // 로컬 스토리지에 저장된 기존 요청 목록 가져오기
-    const existingRequests = JSON.parse(localStorage.getItem('requests') || '[]');
-    
-    // 새 요청 추가
-    const updatedRequests = [...existingRequests, newRequest];
-    
-    // 로컬 스토리지에 저장
-    localStorage.setItem('requests', JSON.stringify(updatedRequests));
-
-    // 목록 페이지로 이동
-    navigate('/requests');
-  };
-
+  // Form JSX remains mostly the same, but with improved error handling
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -76,22 +108,29 @@ const RequestCreate = () => {
           새 요청 작성
         </h1>
 
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Category Select */}
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              단과대학
+              카테고리
             </label>
             <select
-              value={formData.college}
-              onChange={(e) => setFormData({ ...formData, college: e.target.value })}
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value as RequestCategory })}
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
             >
-              <option value="IT대학">IT대학</option>
-              <option value="공과대학">공과대학</option>
-              <option value="약학대학">약학대학</option>
+              <option value="HELP">도움 요청</option>
+              <option value="INFO">정보 공유</option>
             </select>
           </FormField>
 
+          {/* Title Input */}
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               제목
@@ -105,6 +144,7 @@ const RequestCreate = () => {
             />
           </FormField>
 
+          {/* Content Textarea */}
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               내용
@@ -117,23 +157,40 @@ const RequestCreate = () => {
             />
           </FormField>
 
+          {/* Map Component */}
           <LocationSelectMapComponent onLocationSelect={handleLocationSelect} />
 
-
+          {/* Reward Input */}
           <FormField>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              기본 금액
+              보상금
             </label>
             <input
               type="number"
-              value={formData.baseFunding}
-              onChange={(e) => setFormData({ ...formData, baseFunding: e.target.value })}
+              value={formData.reward}
+              onChange={(e) => setFormData({ ...formData, reward: e.target.value })}
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               min="100"
               required
             />
           </FormField>
 
+          {/* Duration Input */}
+          <FormField>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              지속 시간 (초)
+            </label>
+            <input
+              type="number"
+              value={formData.ramaningTime}
+              onChange={(e) => setFormData({ ...formData, ramaningTime: e.target.value })}
+              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+              min="600"
+              required
+            />
+          </FormField>
+
+          {/* Group Funding Checkbox */}
           <FormField>
             <label className="flex items-center gap-2">
               <input
@@ -148,24 +205,25 @@ const RequestCreate = () => {
             </label>
           </FormField>
 
+          {/* Submit Buttons */}
           <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={() => navigate('/requests')}
               className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              disabled={isSubmitting}
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              disabled={isSubmitting}
+              className={`px-6 py-2 bg-blue-600 text-white rounded-lg 
+                ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-700'}`}
             >
-              작성하기
+              {isSubmitting ? '처리중...' : '작성하기'}
             </button>
           </div>
-
-
-
         </form>
       </div>
     </div>

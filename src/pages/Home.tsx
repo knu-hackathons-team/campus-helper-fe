@@ -25,11 +25,13 @@ function Home() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
+  
   const handleLogout = () => {
     logout();
     navigate('/');
   };
-
+  console.log('userInfo:', userInfo);
+  console.log('isAuthenticated:', isAuthenticated);
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-12 px-4 transition-colors">
       <div className="max-w-7xl mx-auto">
