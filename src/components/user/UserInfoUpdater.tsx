@@ -1,3 +1,5 @@
+// src/components/user/UserInfoUpdater.tsx
+
 import { useEffect } from 'react';
 import useAuthStore from '@/store/useAuthStore';
 

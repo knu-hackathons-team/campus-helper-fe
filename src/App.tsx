@@ -11,10 +11,10 @@ import RequestJoin from './pages/Request/Join';
 import RequestCreate from './pages/Request/Create';
 import Login from './pages/Auth/Login';
 import SignUp from './pages/Auth/SignUp';
+import MyPage from './pages/MyPage';
 
 // 임시 페이지 컴포넌트들 (나중에 실제 컴포넌트로 교체)
 const RequestDetail = () => <div>요청 상세</div>;
-const MyPage = () => <div>마이페이지</div>;
 
 function App() {
   return (

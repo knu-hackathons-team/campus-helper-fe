@@ -38,7 +38,7 @@ const Navbar = () => {
           <a href="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
             <Bell className="w-5 h-5" />
           </a>
-          <a href="/profile" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <a href="/mypage" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
             <User className="w-5 h-5" />
           </a>
           <ThemeButton
@@ -87,7 +87,7 @@ const Navbar = () => {
                 <Bell className="w-5 h-5" />
                 <span>알림</span>
               </a>
-              <a href="/profile" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+              <a href="/mypage" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                 <User className="w-5 h-5" />
                 <span>프로필</span>
               </a>

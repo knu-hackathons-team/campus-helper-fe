@@ -28,6 +28,7 @@
 본 프로젝트는 **React-Leaflet**과 **Tmap REST API** 두 가지 지도 API를 사용하여 지도 기반 기능을 구현하고 있습니다. 각각의 API는 서로 다른 역할을 수행합니다.
 
 ### 1. React-Leaflet
+
 - **역할**:
   - 지도 렌더링을 담당합니다.
   - OpenStreetMap 타일을 기반으로 지도를 화면에 표시합니다.
@@ -39,6 +40,7 @@
   - 지도 데이터를 직접적으로 제공하지 않고, 타일 렌더링만 수행합니다.
 
 ### 2. Tmap REST API
+
 - **역할**:
   - 경로 검색과 같은 데이터 기반의 지도 기능을 제공합니다.
   - 특정 좌표 간의 보행자 경로, 차량 경로, 대중교통 경로 데이터를 제공합니다.
@@ -49,14 +51,13 @@
   - 상세한 경로 데이터(좌표 배열)를 제공하며, React-Leaflet의 `Polyline` 컴포넌트를 사용해 지도에 표시합니다.
 
 ### 지도 API 통합 구조
+
 - **React-Leaflet**:
   - 지도 타일과 UI 렌더링에 사용됩니다.
   - 경로 데이터를 받아 화면에 시각적으로 표시합니다.
 - **Tmap REST API**:
   - 경로 데이터 제공에 사용됩니다.
   - React-Leaflet이 사용할 좌표 데이터를 반환합니다.
-
-
 
 ## 개발 도구 설정
 
@@ -73,7 +74,6 @@
 - Prettier
 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
-
 
 ```
 campus-helper-fe
@@ -135,6 +135,8 @@ campus-helper-fe
 │  │  │  └─ SignUp
 │  │  │     └─ index.tsx
 │  │  ├─ Home
+│  │  │  └─ index.tsx
+│  │  ├─ MyPage
 │  │  │  └─ index.tsx
 │  │  └─ Request
 │  │     ├─ Accept
