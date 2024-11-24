@@ -1,11 +1,12 @@
 // src/pages/Request/List/index.tsx
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { Users, Plus, MapPin } from 'lucide-react';
 import { Distance } from '@/components/common/Distance';
 import { useRequestList } from '@/hooks/useRequest';
+import { calculateDistance } from '@/hooks/useDistance';
 import { RequestDto } from '@/api/request/types'; // RequestDto 타입 사용
 
 const RequestCard = styled.div`
@@ -42,6 +43,23 @@ const RequestList = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const { requests, isLoading, error, currentLocation, pagination, setPage } =
     useRequestList();
+
+  // 거리 기준으로 정렬된 요청 목록
+  const sortedRequests = useMemo(() => {
+    if (!currentLocation || !requests.length) return requests;
+    
+    return [...requests].sort((a: RequestDto, b: RequestDto) => {
+      const distanceA = calculateDistance(currentLocation, {
+        latitude: a.latitude,
+        longitude: a.longitude
+      });
+      const distanceB = calculateDistance(currentLocation, {
+        latitude: b.latitude,
+        longitude: b.longitude
+      });
+      return distanceA - distanceB;
+    });
+  }, [requests, currentLocation]);
 
   const navigate = useNavigate();
 
@@ -132,7 +150,7 @@ const RequestList = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {requests.map((request: RequestDto) => (
+          {sortedRequests.map((request: RequestDto) => (
             <div key={request.id}>
               <RequestCard
                 onClick={() => handleCardClick(request.id)}

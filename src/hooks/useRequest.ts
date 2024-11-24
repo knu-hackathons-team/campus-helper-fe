@@ -1,11 +1,11 @@
 // src/hooks/useRequest.ts
 
 // import { mockRequests } from '@/mocks/requests'; // 뫀 데이터
-import { useState, useEffect } from 'react';
-import { useDistance } from './useDistance';
+import { useState, useEffect, useMemo } from 'react';
+import { useDistance, calculateDistance } from './useDistance';
 import { Location } from '@/types/Location';
 import { requestApi } from '@/api/request';
-import type { RequestDto, RequestListResponse } from '@/api/request/types';
+import type { RequestDto } from '@/api/request/types';
 
 interface UseRequestListResult {
   requests: RequestDto[];
@@ -72,24 +72,21 @@ export const useRequest = (id: string | undefined): UseRequestResult => {
 
 // 요청 목록 조회
 export const useRequestList = (): UseRequestListResult => {
-  const [requestsData, setRequestsData] = useState<RequestListResponse>({
-    content: [],
-    page: 0,
-    size: 5,
-    totalElements: 0,
-    totalPages: 0
-  });
+  const [allRequests, setAllRequests] = useState<RequestDto[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const pageSize = 5;
 
   const { currentLocation } = useDistance();
 
+  // 전체 데이터 로드
   useEffect(() => {
-    const loadRequests = async () => {
+    const loadAllRequests = async () => {
       try {
         setIsLoading(true);
-        const response = await requestApi.getRequests(requestsData.page);
-        setRequestsData(response);  // 백엔드 응답을 그대로 저장
+        const response = await requestApi.getRequests(0, 1000); // 큰 size로 모든 데이터 요청
+        setAllRequests(response.content);
       } catch (err) {
         console.error('Error loading requests:', err);
         setError('요청 목록을 불러오는데 실패했습니다.');
@@ -98,20 +95,44 @@ export const useRequestList = (): UseRequestListResult => {
       }
     };
 
-    loadRequests();
-  }, [requestsData.page]);
+    loadAllRequests();
+  }, []); // 페이지 번호 의존성 제거
 
+  // 거리순으로 정렬된 요청 목록
+  const sortedRequests = useMemo(() => {
+    if (!currentLocation) return allRequests;
+
+    return [...allRequests].sort((a, b) => {
+      const distanceA = calculateDistance(currentLocation, {
+        latitude: a.latitude,
+        longitude: a.longitude
+      });
+      const distanceB = calculateDistance(currentLocation, {
+        latitude: b.latitude,
+        longitude: b.longitude
+      });
+      return distanceA - distanceB;
+    });
+  }, [allRequests, currentLocation]);
+
+  // 현재 페이지의 요청 목록
+  const paginatedRequests = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    return sortedRequests.slice(startIndex, startIndex + pageSize);
+  }, [sortedRequests, currentPage]);
+
+  // 페이지 변경 핸들러
   const setPage = (newPage: number) => {
-    setRequestsData(prev => ({ ...prev, page: newPage }));
+    setCurrentPage(newPage);
   };
 
   return {
-    requests: requestsData.content,         // 게시글 목록
-    pagination: { // currentPage 포함
-      currentPage: requestsData.page,
-      totalPages: requestsData.totalPages,
-      totalElements: requestsData.totalElements,
-      size: requestsData.size,
+    requests: paginatedRequests,
+    pagination: {
+      currentPage,
+      totalPages: Math.ceil(sortedRequests.length / pageSize),
+      totalElements: sortedRequests.length,
+      size: pageSize,
     },
     isLoading,
     error,
