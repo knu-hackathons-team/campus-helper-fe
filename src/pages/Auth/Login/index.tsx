@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import useAuthStore from '../store/useAuthStore';
+import useAuthStore from '../../../store/useAuthStore';
 import { authApi } from '@/api/auth';
 import type { LoginFormData } from '@/api/auth/types'; // LoginFormData 타입도 auth 도메인으로 이동
 import { ApiError } from '@/api/lib/axios';
@@ -40,24 +40,24 @@ function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-  
+
     try {
       setIsLoading(true);
-  
+
       const response = await authApi.login(formData);
-  
+
       // 개발 환경에서만 로그 출력
       if (process.env.NODE_ENV === 'development') {
         console.log('로그인 응답:', response);
       }
-  
+
       if (response.jwt) {
         setToken(response.jwt);
-  
+
         if (process.env.NODE_ENV === 'development') {
           console.log('저장된 토큰:', useAuthStore.getState().token);
         }
-  
+
         await fetchUserInfo();
         navigate('/');
       } else {

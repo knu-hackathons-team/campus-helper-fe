@@ -4,13 +4,13 @@ import RootLayout from './components/Layout/RootLayout';
 import UserInfoUpdater from './components/user/UserInfoUpdater';
 
 import Home from './pages/Home';
-import RequestList from './pages/RequestList';
+import RequestList from './pages/Request/List';
 import Navbar from './components/Layout/Navbar';
-import RequestAccept from './pages/RequestAccept';
-import RequestJoin from './pages/RequestJoin';
-import RequestCreate from './pages/RequestCreate';
-import Login from './pages/Login';
-import SignUp from './pages/SignUp';
+import RequestAccept from './pages/Request/Accept';
+import RequestJoin from './pages/Request/Join';
+import RequestCreate from './pages/Request/Create';
+import Login from './pages/Auth/Login';
+import SignUp from './pages/Auth/SignUp';
 
 // 임시 페이지 컴포넌트들 (나중에 실제 컴포넌트로 교체)
 const RequestDetail = () => <div>요청 상세</div>;

@@ -1,21 +1,18 @@
-// src/pages/RequestCreate.tsx
-import React, { useState,useCallback } from 'react';
+// src/pages/Request/Create/index.tsx
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { requestApi } from '@/api/request';
 import type { CreateRequestDto, RequestCategory } from '@/api/request/types';
-import { ApiError } from '@/api/lib/axios';
+import { ApiError } from '@/api/lib/axios';  // ApiError import 추가
 import useAuthStore from '@/store/useAuthStore';
 import LocationSelectMapComponent from '@/components/common/Map/LocationSelectMapComponent';
 import type { Location } from '@/types/Location';
-import { COLLEGES } from '@/api/auth/constants';
-import type { College } from '@/api/auth/types';
+import { RequestFormData, DEFAULT_FORM_DATA } from './types';
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
 `;
-
-const DEFAULT_REMAINING_TIME = 3600; // 1시간
 
 const RequestCreate = () => {
   const navigate = useNavigate();
@@ -23,22 +20,25 @@ const RequestCreate = () => {
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: 'HELP' as RequestCategory,
-    allowGroupFunding: false,
-    college: 'IT대학' as College, // College 타입 명시
-    reward: '',
-    ramaningTime: DEFAULT_REMAINING_TIME.toString(),
-  });
+  const [formData, setFormData] = useState<RequestFormData>(DEFAULT_FORM_DATA);
 
   // onLocationSelect 함수를 useCallback으로 감싸기
   const handleLocationSelect = useCallback((location: Location) => {
     setCurrentLocation(location);
     setError(null);
   }, []); // 의존성 배열이 비어있으므로 함수가 재생성되지 않음
+
+  // index.tsx에 에러 처리 함수 추가
+  const handleError = (error: unknown) => {  // error 타입을 unknown으로 지정
+    if (error instanceof ApiError) {
+      setError(error.message);
+    } else if (error instanceof Error) {  // 일반적인 Error 객체도 처리
+      setError(error.message);
+    } else {
+      setError('요청 생성 중 오류가 발생했습니다.');
+    }
+    console.error('Failed to create request:', error);
+  };
 
   const validateForm = () => {
     if (!isAuthenticated) {
@@ -66,14 +66,9 @@ const RequestCreate = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
-
     try {
       const requestData: CreateRequestDto = {
         title: formData.title.trim(),
@@ -83,18 +78,13 @@ const RequestCreate = () => {
         latitude: currentLocation!.latitude,
         longitude: currentLocation!.longitude,
         ramaningTime: parseInt(formData.ramaningTime),
-        reward: parseInt(formData.reward)
+        reward: parseInt(formData.reward),
       };
 
       await requestApi.createRequest(requestData);
       navigate('/requests');
     } catch (error) {
-      if (error instanceof ApiError) {
-        setError(error.message);
-      } else {
-        setError('요청 생성 중 오류가 발생했습니다.');
-      }
-      console.error('Failed to create request:', error);
+      handleError(error);
     } finally {
       setIsSubmitting(false);
     }
@@ -122,7 +112,12 @@ const RequestCreate = () => {
             </label>
             <select
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as RequestCategory })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  category: e.target.value as RequestCategory,
+                })
+              }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
             >
               <option value="HELP">도움 요청</option>
@@ -138,7 +133,9 @@ const RequestCreate = () => {
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               required
             />
@@ -151,7 +148,9 @@ const RequestCreate = () => {
             </label>
             <textarea
               value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, content: e.target.value })
+              }
               className="w-full p-2 border rounded-lg h-32 resize-none bg-white dark:bg-gray-700 dark:border-gray-600"
               required
             />
@@ -168,7 +167,9 @@ const RequestCreate = () => {
             <input
               type="number"
               value={formData.reward}
-              onChange={(e) => setFormData({ ...formData, reward: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, reward: e.target.value })
+              }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               min="100"
               required
@@ -183,7 +184,9 @@ const RequestCreate = () => {
             <input
               type="number"
               value={formData.ramaningTime}
-              onChange={(e) => setFormData({ ...formData, ramaningTime: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, ramaningTime: e.target.value })
+              }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
               min="600"
               required
@@ -196,7 +199,12 @@ const RequestCreate = () => {
               <input
                 type="checkbox"
                 checked={formData.allowGroupFunding}
-                onChange={(e) => setFormData({ ...formData, allowGroupFunding: e.target.checked })}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    allowGroupFunding: e.target.checked,
+                  })
+                }
                 className="rounded"
               />
               <span className="text-sm text-gray-700 dark:text-gray-300">

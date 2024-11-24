@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import useAuthStore from '@/store/useAuthStore';
 import { authApi } from '@/api/auth';
 import { COLLEGES } from '@/api/auth/constants';
 import type { SignUpFormData } from '@/api/auth/types';

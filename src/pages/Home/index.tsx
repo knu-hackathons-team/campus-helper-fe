@@ -3,7 +3,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import useAuthStore from '../store/useAuthStore';
+import useAuthStore from '../../store/useAuthStore';
 
 // Emotion으로 커스텀 스타일링이 필요한 부분만 정의합니다.
 const ButtonGroup = styled.div`
@@ -25,7 +25,6 @@ function Home() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
 
-  
   const handleLogout = () => {
     logout();
     navigate('/');

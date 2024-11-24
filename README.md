@@ -74,6 +74,7 @@
 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
 
+
 ```
 campus-helper-fe
 ├─ .eslintrc.cjs
@@ -89,9 +90,19 @@ campus-helper-fe
 ├─ README.md
 ├─ src
 │  ├─ api
-│  │  ├─ auth.ts
-│  │  ├─ axios.ts
-│  │  └─ fetchRoute.tsx
+│  │  ├─ auth
+│  │  │  ├─ constants.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
+│  │  ├─ fetchRoute.tsx
+│  │  ├─ lib
+│  │  │  └─ axios.ts
+│  │  ├─ request
+│  │  │  ├─ constants.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
+│  │  └─ types
+│  │     └─ common.ts
 │  ├─ App.css
 │  ├─ App.tsx
 │  ├─ assets
@@ -118,18 +129,33 @@ campus-helper-fe
 │  ├─ mocks
 │  │  └─ requests.ts
 │  ├─ pages
-│  │  ├─ Home.tsx
-│  │  ├─ Login.tsx
-│  │  ├─ RequestAccept.tsx
-│  │  ├─ RequestCreate.tsx
-│  │  ├─ RequestJoin.tsx
-│  │  ├─ RequestList.tsx
-│  │  └─ SignUp.tsx
+│  │  ├─ Auth
+│  │  │  ├─ Login
+│  │  │  │  └─ index.tsx
+│  │  │  └─ SignUp
+│  │  │     └─ index.tsx
+│  │  ├─ Home
+│  │  │  └─ index.tsx
+│  │  └─ Request
+│  │     ├─ Accept
+│  │     │  └─ index.tsx
+│  │     ├─ Create
+│  │     │  ├─ index.tsx
+│  │     │  └─ types.ts
+│  │     ├─ Join
+│  │     │  └─ index.tsx
+│  │     └─ List
+│  │        └─ index.tsx
 │  ├─ store
 │  │  ├─ useAuthStore.ts
 │  │  └─ useThemeStore.ts
 │  ├─ types
+│  │  ├─ common
+│  │  │  └─ index.ts
 │  │  ├─ Location.ts
+│  │  ├─ request
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
 │  │  └─ request.ts
 │  ├─ utils
 │  └─ vite-env.d.ts
