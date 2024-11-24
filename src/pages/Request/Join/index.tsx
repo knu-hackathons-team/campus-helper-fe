@@ -1,3 +1,5 @@
+// src/pages/Request/Join/index.tsx
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
@@ -47,7 +49,7 @@ const RequestJoin = () => {
         {/* 요청 정보 */}
         <div className="mb-6">
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            {request.college} · {request.author}
+            {request.college} · {request.writer}
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {request.title}
@@ -60,11 +62,17 @@ const RequestJoin = () => {
         {/* 지도 섹션 */}
         <div className="mb-6">
 
-          {currentLocation && request.location && (
+          {currentLocation && {
+                  latitude: request.latitude,
+                  longitude: request.longitude,
+                } && (
             <div className="rounded-lg overflow-hidden shadow-lg">
               <RouteMapComponent
                 start={currentLocation}
-                end={request.location}
+                end={{
+                  latitude: request.latitude,
+                  longitude: request.longitude,
+                }}
               />
             </div>
           )}
@@ -78,10 +86,16 @@ const RequestJoin = () => {
         </div>
 
         {/* 예상 정보 */}
-        {currentLocation && request.location && (
+        {currentLocation && {
+                  latitude: request.latitude,
+                  longitude: request.longitude,
+                } && (
           <EstimatedInfo
             currentLocation={currentLocation}
-            targetLocation={request.location}
+            targetLocation={{
+              latitude: request.latitude,
+              longitude: request.longitude,
+            }}
             className="mb-6"
           />
         )}
@@ -94,14 +108,15 @@ const RequestJoin = () => {
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <Users size={20} />
-              <span>{request.participants}명 참여 중</span>
+                        {/* 아래 1명은 백엔드에서 적절한 인원수를 받아올것 */}
+              <span>{1}명 참여 중</span> 
             </div>
             <div className="text-blue-600 dark:text-blue-400 font-medium">
-              {request.totalFunding.toLocaleString()}원
+              {request.reward.toLocaleString()}원
             </div>
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            1인당 펀딩 금액: {request.baseFunding.toLocaleString()}원
+            1인당 펀딩 금액: {request.reward.toLocaleString()}원
           </div>
         </div>
 
@@ -113,7 +128,7 @@ const RequestJoin = () => {
             </h2>
             <div className="flex justify-between items-center text-lg font-medium text-gray-900 dark:text-gray-100">
               <span>펀딩 참여 금액</span>
-              <span>{request.baseFunding.toLocaleString()}원</span>
+              <span>{request.reward.toLocaleString()}원</span>
             </div>
           </div>
         </div>
@@ -125,7 +140,7 @@ const RequestJoin = () => {
           </h2>
           <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm space-y-2">
             <li>
-              최초 요청자가 설정한 금액({request.baseFunding.toLocaleString()}
+              최초 요청자가 설정한 금액({request.reward.toLocaleString()}
               원)으로 참여할 수 있습니다.
             </li>
             <li>

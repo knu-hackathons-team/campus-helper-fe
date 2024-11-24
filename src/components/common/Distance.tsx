@@ -1,3 +1,4 @@
+// src/components/common/Distance.tsx
 import React from 'react';
 import { Location } from '@/types/Location';
 import { formatDistance, calculateDistance } from '@/hooks/useDistance';

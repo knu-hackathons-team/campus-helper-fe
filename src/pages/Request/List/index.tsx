@@ -1,10 +1,12 @@
-import  { useState } from 'react';
+// src/pages/Request/List/index.tsx
+
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { Users, Plus, MapPin } from 'lucide-react';
 import { Distance } from '@/components/common/Distance';
 import { useRequestList } from '@/hooks/useRequest';
-import { Request } from '@/types/request';
+import { RequestDto } from '@/api/request/types'; // RequestDto 타입 사용
 
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
@@ -37,21 +39,53 @@ const SlideUpActions = styled.div<{ isOpen: boolean }>`
 `;
 
 const RequestList = () => {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const { requests, isLoading, error, currentLocation } = useRequestList();
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const { requests, isLoading, error, currentLocation, pagination, setPage } =
+    useRequestList();
+
   const navigate = useNavigate();
 
-  const handleCardClick = (id: string) => {
+  const handleCardClick = (id: number) => {
     setSelectedId(selectedId === id ? null : id);
   };
 
-  const handleAccept = (requestId: string) => {
+  const handleAccept = (requestId: number) => {
     navigate(`/requests/${requestId}/accept`);
   };
 
-  const handleJoin = (requestId: string) => {
+  const handleJoin = (requestId: number) => {
     navigate(`/requests/${requestId}/join`);
   };
+
+    // 페이지네이션 Helper 함수
+    const getPageNumbers = (current: number, total: number) => {
+      const delta = 2; // 현재 페이지 앞뒤로 보여줄 페이지 수
+      const left = current - delta;
+      const right = current + delta + 1;
+      const range = [];
+      const rangeWithDots = [];
+      let l;
+  
+      for (let i = 1; i <= total; i++) {
+        if (i === 1 || i === total || (i >= left && i < right)) {
+          range.push(i);
+        }
+      }
+  
+      for (let i of range) {
+        if (l) {
+          if (i - l === 2) {
+            rangeWithDots.push(l + 1);
+          } else if (i - l !== 1) {
+            rangeWithDots.push('...');
+          }
+        }
+        rangeWithDots.push(i);
+        l = i;
+      }
+  
+      return rangeWithDots;
+    };
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 mb-20">
@@ -63,7 +97,9 @@ const RequestList = () => {
         <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg mb-4">
           <p className="text-yellow-800 dark:text-yellow-200 flex items-center gap-2">
             <MapPin size={20} />
-            <span>위치 정보를 활성화하면 현재 위치에서 가까운 순서로 정렬됩니다.</span>
+            <span>
+              위치 정보를 활성화하면 현재 위치에서 가까운 순서로 정렬됩니다.
+            </span>
           </p>
         </div>
       )}
@@ -74,14 +110,18 @@ const RequestList = () => {
         </div>
       )}
 
-{isLoading ? (
+      {isLoading ? (
         <div className="text-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">요청 목록을 불러오는 중...</p>
+          <p className="text-gray-600 dark:text-gray-400">
+            요청 목록을 불러오는 중...
+          </p>
         </div>
       ) : requests.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <p className="text-gray-600 dark:text-gray-400 mb-4">아직 등록된 요청이 없습니다.</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            아직 등록된 요청이 없습니다.
+          </p>
           <button
             onClick={() => navigate('/requests/new')}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
@@ -92,7 +132,7 @@ const RequestList = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {requests.map((request: Request) => (
+          {requests.map((request: RequestDto) => (
             <div key={request.id}>
               <RequestCard
                 onClick={() => handleCardClick(request.id)}
@@ -103,32 +143,18 @@ const RequestList = () => {
                 <div className="flex justify-between items-start mb-2">
                   <div>
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {request.college} · {request.author}
+                      {request.college} · {request.writer}{' '}
+                      {/* author -> writer */}
                     </span>
                     <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                       {request.title}
                     </h2>
                   </div>
                   <div className="text-right">
-                    {request.allowGroupFunding ? (
-                      <>
-                        <div className="text-blue-600 dark:text-blue-400 font-medium">
-                          {request.totalFunding.toLocaleString()}원
-                          <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
-                            ({request.baseFunding.toLocaleString()}원 ×{' '}
-                            {request.participants})
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-end gap-1 text-sm text-gray-500">
-                          <Users size={14} />
-                          <span>{request.participants}명 참여 중</span>
-                        </div>
-                      </>
-                    ) : (
-                      <span className="text-blue-600 dark:text-blue-400 font-medium">
-                        {request.baseFunding.toLocaleString()}원
-                      </span>
-                    )}
+                    {/* reward만 표시하도록 수정 */}
+                    <span className="text-blue-600 dark:text-blue-400 font-medium">
+                      {request.reward.toLocaleString()}원
+                    </span>
                   </div>
                 </div>
 
@@ -139,7 +165,11 @@ const RequestList = () => {
                 <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                   {currentLocation && (
                     <Distance
-                      location={request.location}
+                      location={{
+                        // location 객체 구조 맞추기
+                        latitude: request.latitude,
+                        longitude: request.longitude,
+                      }}
                       currentLocation={currentLocation}
                       className="text-sm text-gray-500 dark:text-gray-400"
                     />
@@ -179,6 +209,68 @@ const RequestList = () => {
               </SlideUpActions>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 페이지네이션 UI 추가 */}
+        {!isLoading && requests.length > 0 && (
+        <div className="mt-6 flex flex-col items-center gap-2">
+          <div className="text-sm text-gray-500">
+            전체 {pagination.totalElements}개 중{' '}
+            {pagination.currentPage * pagination.size + 1}-
+            {Math.min(
+              (pagination.currentPage + 1) * pagination.size,
+              pagination.totalElements
+            )}
+          </div>
+          <div className="flex justify-center gap-2">
+            {/* 이전 페이지 버튼 */}
+            <button
+              onClick={() => setPage(Math.max(0, pagination.currentPage - 1))}
+              disabled={pagination.currentPage === 0}
+              className={`px-3 py-1 rounded ${
+                pagination.currentPage === 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              이전
+            </button>
+
+            {/* 페이지 번호들 */}
+            {getPageNumbers(pagination.currentPage + 1, pagination.totalPages).map((pageNum, index) => (
+              pageNum === '...' ? (
+                <span key={`dot-${index}`} className="px-3 py-1 text-gray-500">
+                  {pageNum}
+                </span>
+              ) : (
+                <button
+                  key={pageNum}
+                  onClick={() => setPage(Number(pageNum) - 1)}
+                  className={`px-3 py-1 rounded ${
+                    pagination.currentPage === Number(pageNum) - 1
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            ))}
+
+            {/* 다음 페이지 버튼 */}
+            <button
+              onClick={() => setPage(Math.min(pagination.totalPages - 1, pagination.currentPage + 1))}
+              disabled={pagination.currentPage === pagination.totalPages - 1}
+              className={`px-3 py-1 rounded ${
+                pagination.currentPage === pagination.totalPages - 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              다음
+            </button>
+          </div>
         </div>
       )}
 

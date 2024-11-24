@@ -1,19 +1,27 @@
 // src/hooks/useRequest.ts
+
+// import { mockRequests } from '@/mocks/requests'; // 뫀 데이터
 import { useState, useEffect } from 'react';
-import { Request } from '@/types/request';
-import { mockRequests } from '@/mocks/requests';
 import { useDistance } from './useDistance';
 import { Location } from '@/types/Location';
+import { requestApi } from '@/api/request';
+import type { RequestDto, RequestListResponse } from '@/api/request/types';
 
-interface UseRequestResult {
-  request: Request | undefined;
+interface UseRequestListResult {
+  requests: RequestDto[];
   isLoading: boolean;
   error: string | null;
   currentLocation: Location | null;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalElements: number;
+    size: number;
+  };
+  setPage: (page: number) => void;
 }
-
-interface UseRequestListResult {
-  requests: Request[];
+interface UseRequestResult {
+  request: RequestDto | undefined; // Request -> RequestDto로 변경
   isLoading: boolean;
   error: string | null;
   currentLocation: Location | null;
@@ -21,10 +29,14 @@ interface UseRequestListResult {
 
 // 단일 요청 조회
 export const useRequest = (id: string | undefined): UseRequestResult => {
-  const [request, setRequest] = useState<Request | undefined>(undefined);
+  const [request, setRequest] = useState<RequestDto | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { currentLocation, isLoading: locationLoading, error: locationError } = useDistance();
+  const {
+    currentLocation,
+    isLoading: locationLoading,
+    error: locationError,
+  } = useDistance();
 
   useEffect(() => {
     if (!id) {
@@ -32,96 +44,78 @@ export const useRequest = (id: string | undefined): UseRequestResult => {
       return;
     }
 
-    try {
-      const savedRequests = JSON.parse(localStorage.getItem('requests') || '[]');
-      const allRequests = [...mockRequests, ...savedRequests];
-      const found = allRequests.find(req => req.id === id);
-      
-      if (found) {
-        setRequest(found);
-      } else {
-        setError('요청을 찾을 수 없습니다.');
+    const fetchRequest = async () => {
+      try {
+        setIsLoading(true);
+        const response = await requestApi.getRequestById(Number(id));
+        setRequest(response);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching request:', err);
+        setError('요청을 불러오는데 실패했습니다.');
+        setRequest(undefined);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      setError('데이터를 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    };
+
+    fetchRequest();
   }, [id]);
 
   return {
     request,
     isLoading: isLoading || locationLoading,
     error: error || locationError,
-    currentLocation
+    currentLocation,
   };
 };
 
 // 요청 목록 조회
 export const useRequestList = (): UseRequestListResult => {
-  const [requests, setRequests] = useState<Request[]>([]);
+  const [requestsData, setRequestsData] = useState<RequestListResponse>({
+    content: [],
+    page: 0,
+    size: 5,
+    totalElements: 0,
+    totalPages: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { 
-    currentLocation, 
-    isLoading: locationLoading, 
-    error: locationError,
-    calculateDistanceFromCurrent 
-  } = useDistance();
+
+  const { currentLocation } = useDistance();
 
   useEffect(() => {
-    let isMounted = true;
-    
     const loadRequests = async () => {
       try {
-        let allRequests = [...mockRequests];
-        const savedRequestsString = localStorage.getItem('requests');
-        
-        if (savedRequestsString) {
-          const savedRequests = JSON.parse(savedRequestsString);
-          allRequests = [...allRequests, ...savedRequests];
-        }
-
-        if (currentLocation) {
-          allRequests.sort((a, b) => {
-            const distanceA = calculateDistanceFromCurrent(a.location);
-            const distanceB = calculateDistanceFromCurrent(b.location);
-            return distanceA - distanceB;
-          });
-        } else {
-          allRequests.sort((a, b) => 
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
-        }
-
-        if (isMounted) {
-          setRequests(allRequests);
-          setError(null);
-        }
+        setIsLoading(true);
+        const response = await requestApi.getRequests(requestsData.page);
+        setRequestsData(response);  // 백엔드 응답을 그대로 저장
       } catch (err) {
         console.error('Error loading requests:', err);
-        if (isMounted) {
-          setError('요청 목록을 불러오는데 실패했습니다.');
-          setRequests([]);
-        }
+        setError('요청 목록을 불러오는데 실패했습니다.');
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     loadRequests();
+  }, [requestsData.page]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [currentLocation]); // calculateDistanceFromCurrent 제거
+  const setPage = (newPage: number) => {
+    setRequestsData(prev => ({ ...prev, page: newPage }));
+  };
 
   return {
-    requests,
-    isLoading: isLoading || locationLoading,
-    error: error || locationError,
-    currentLocation
+    requests: requestsData.content,         // 게시글 목록
+    pagination: { // currentPage 포함
+      currentPage: requestsData.page,
+      totalPages: requestsData.totalPages,
+      totalElements: requestsData.totalElements,
+      size: requestsData.size,
+    },
+    isLoading,
+    error,
+    currentLocation,
+    setPage
   };
 };

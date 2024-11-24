@@ -93,6 +93,14 @@ function Home() {
                 >
                   회원가입
                 </Link>
+
+                <Link
+                  to="/requests"
+                  css={linkStyles}
+                  className="bg-white text-blue-500 px-6 py-2 rounded-lg border border-blue-500 hover:bg-blue-50 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700"
+                >
+                  요청 목록 보기
+                </Link>
               </ButtonGroup>
             </div>
           )}

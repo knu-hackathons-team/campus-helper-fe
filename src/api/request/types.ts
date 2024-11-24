@@ -32,3 +32,11 @@ export interface RequestDto {
   reward: number;
   createdAt: string;
 }
+
+export interface RequestListResponse {
+  content: RequestDto[];      // 백엔드 응답 구조와 동일하게 타입 정의
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}

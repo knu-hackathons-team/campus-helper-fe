@@ -1,3 +1,5 @@
+// src/pages/Request/Accept/index.tsx
+
 import { useParams, useNavigate } from 'react-router-dom';
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
@@ -46,28 +48,33 @@ const RequestAccept = () => {
         {/* 요청 정보 헤더 */}
         <div className="mb-6">
           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
-            {request.college} · {request.author}
+            {request.college} · {request.writer}
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             {request.title}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">{request.content}</p>
           <div className="mt-4 text-blue-600 dark:text-blue-400 font-medium">
-            보상: {request.baseFunding.toLocaleString()}원
+            보상: {request.reward.toLocaleString()}원
           </div>
         </div>
 
         {/* 지도 섹션 */}
         <div className="mb-6">
-
-          {currentLocation && request.location && (
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <RouteMapComponent
-                start={currentLocation}
-                end={request.location}
-              />
-            </div>
-          )}
+          {currentLocation && {
+              latitude: request.latitude,
+              longitude: request.longitude,
+            } && (
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <RouteMapComponent
+                  start={currentLocation}
+                  end={{
+                    latitude: request.latitude,
+                    longitude: request.longitude,
+                  }}
+                />
+              </div>
+            )}
           {!currentLocation && (
             <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
               <p className="text-yellow-800 dark:text-yellow-200 text-sm">
@@ -78,13 +85,19 @@ const RequestAccept = () => {
         </div>
 
         {/* 예상 소요 시간 및 거리 */}
-        {currentLocation && request.location && (
-          <EstimatedInfo
-            currentLocation={currentLocation}
-            targetLocation={request.location}
-            className="mb-6"
-          />
-        )}
+        {currentLocation && {
+            latitude: request.latitude,
+            longitude: request.longitude,
+          } && (
+            <EstimatedInfo
+              currentLocation={currentLocation}
+              targetLocation={{
+                latitude: request.latitude,
+                longitude: request.longitude,
+              }}
+              className="mb-6"
+            />
+          )}
 
         <div className="space-y-4 mb-6">
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
