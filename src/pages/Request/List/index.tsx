@@ -1,13 +1,15 @@
 // src/pages/Request/List/index.tsx
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { Users, Plus, MapPin } from 'lucide-react';
+import { Users, Plus, MapPin, Trash } from 'lucide-react';
 import { Distance } from '@/components/common/Distance';
 import { useRequestList } from '@/hooks/useRequest';
 import { calculateDistance } from '@/hooks/useDistance';
 import { RequestDto } from '@/api/request/types'; // RequestDto 타입 사용
+import { toast } from 'react-hot-toast'; // toast 추가
+import { requestApi } from '@/api/request'; // requestApi import 추가
 
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
@@ -41,27 +43,50 @@ const SlideUpActions = styled.div<{ isOpen: boolean }>`
 
 const RequestList = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const { requests, isLoading, error, currentLocation, pagination, setPage } =
-    useRequestList();
+  const { requests, isLoading, error, currentLocation } = useRequestList();
+  // 로컬 상태로 requests 관리
+  const [localRequests, setLocalRequests] = useState<RequestDto[]>([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const pageSize = 5; // 페이지당 항목 수
+  const navigate = useNavigate();
 
-  // 거리 기준으로 정렬된 요청 목록
+  // requests가 변경될 때마다 localRequests 업데이트
+  useEffect(() => {
+    setLocalRequests(requests);
+  }, [requests]);
+
+  // 정렬된 전체 목록
   const sortedRequests = useMemo(() => {
-    if (!currentLocation || !requests.length) return requests;
-    
-    return [...requests].sort((a: RequestDto, b: RequestDto) => {
+    if (!currentLocation || !localRequests.length) return localRequests;
+
+    return [...localRequests].sort((a: RequestDto, b: RequestDto) => {
       const distanceA = calculateDistance(currentLocation, {
         latitude: a.latitude,
-        longitude: a.longitude
+        longitude: a.longitude,
       });
       const distanceB = calculateDistance(currentLocation, {
         latitude: b.latitude,
-        longitude: b.longitude
+        longitude: b.longitude,
       });
       return distanceA - distanceB;
     });
-  }, [requests, currentLocation]);
+  }, [localRequests, currentLocation]);
 
-  const navigate = useNavigate();
+  // 현재 페이지에 표시할 항목들
+  const currentPageItems = useMemo(() => {
+    const startIndex = currentPage * pageSize;
+    return sortedRequests.slice(startIndex, startIndex + pageSize);
+  }, [sortedRequests, currentPage]);
+
+  // 페이지네이션 정보 계산
+  const paginationInfo = useMemo(() => {
+    return {
+      currentPage,
+      totalPages: Math.ceil(sortedRequests.length / pageSize),
+      totalElements: sortedRequests.length,
+      size: pageSize,
+    };
+  }, [sortedRequests.length, currentPage]);
 
   const handleCardClick = (id: number) => {
     setSelectedId(selectedId === id ? null : id);
@@ -75,35 +100,57 @@ const RequestList = () => {
     navigate(`/requests/${requestId}/join`);
   };
 
-    // 페이지네이션 Helper 함수
-    const getPageNumbers = (current: number, total: number) => {
-      const delta = 2; // 현재 페이지 앞뒤로 보여줄 페이지 수
-      const left = current - delta;
-      const right = current + delta + 1;
-      const range = [];
-      const rangeWithDots = [];
-      let l;
-  
-      for (let i = 1; i <= total; i++) {
-        if (i === 1 || i === total || (i >= left && i < right)) {
-          range.push(i);
+  const handleDelete = async (requestId: number) => {
+    if (window.confirm('정말로 이 글을 삭제하시겠습니까?')) {
+      try {
+        await requestApi.deleteRequest(requestId);
+        // 로컬 상태에서 삭제된 항목 제거
+        setLocalRequests((prev) =>
+          prev.filter((request) => request.id !== requestId),
+        );
+        setSelectedId(null); // 선택된 카드 상태 초기화
+        toast.success('글이 삭제되었습니다.');
+      } catch (error) {
+        console.error('Error deleting request:', error);
+        toast.error('글 삭제에 실패했습니다.');
+      }
+    }
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+  };
+
+  // 페이지네이션 Helper 함수
+  const getPageNumbers = (current: number, total: number) => {
+    const delta = 2; // 현재 페이지 앞뒤로 보여줄 페이지 수
+    const left = current - delta;
+    const right = current + delta + 1;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= total; i++) {
+      if (i === 1 || i === total || (i >= left && i < right)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
         }
       }
-  
-      for (let i of range) {
-        if (l) {
-          if (i - l === 2) {
-            rangeWithDots.push(l + 1);
-          } else if (i - l !== 1) {
-            rangeWithDots.push('...');
-          }
-        }
-        rangeWithDots.push(i);
-        l = i;
-      }
-  
-      return rangeWithDots;
-    };
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
 
   return (
     <div className="max-w-2xl mx-auto py-6 px-4 mb-20">
@@ -150,7 +197,7 @@ const RequestList = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {sortedRequests.map((request: RequestDto) => (
+          {currentPageItems.map((request: RequestDto) => (
             <div key={request.id}>
               <RequestCard
                 onClick={() => handleCardClick(request.id)}
@@ -208,20 +255,31 @@ const RequestList = () => {
                 className="bg-white dark:bg-gray-800 shadow-lg rounded-b-lg -mt-1"
               >
                 <div className="p-4 space-x-3 flex justify-end">
-                  <ActionButton
-                    onClick={() => handleAccept(request.id)}
-                    className="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-2"
-                  >
-                    수행하기
-                  </ActionButton>
-                  {request.allowGroupFunding && (
+                  {request.removable ? (
                     <ActionButton
-                      onClick={() => handleJoin(request.id)}
-                      className="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-full hover:bg-gray-500 dark:hover:bg-gray-400 flex items-center gap-2"
+                      onClick={() => handleDelete(request.id)} // handleDelete 함수 구현 필요
+                      className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center gap-2 transition-colors"
                     >
-                      <Users size={16} />
-                      함께하기
+                      <Trash size={16} /> {/* Lucide 아이콘 */}글 삭제하기
                     </ActionButton>
+                  ) : (
+                    <>
+                      <ActionButton
+                        onClick={() => handleAccept(request.id)}
+                        className="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-2"
+                      >
+                        수행하기
+                      </ActionButton>
+                      {request.allowGroupFunding && (
+                        <ActionButton
+                          onClick={() => handleJoin(request.id)}
+                          className="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-full hover:bg-gray-500 dark:hover:bg-gray-400 flex items-center gap-2"
+                        >
+                          <Users size={16} />
+                          함께하기
+                        </ActionButton>
+                      )}
+                    </>
                   )}
                 </div>
               </SlideUpActions>
@@ -230,24 +288,23 @@ const RequestList = () => {
         </div>
       )}
 
-      {/* 페이지네이션 UI 추가 */}
-        {!isLoading && requests.length > 0 && (
+      {/* 페이지네이션 UI */}
+      {!isLoading && sortedRequests.length > 0 && (
         <div className="mt-6 flex flex-col items-center gap-2">
           <div className="text-sm text-gray-500">
-            전체 {pagination.totalElements}개 중{' '}
-            {pagination.currentPage * pagination.size + 1}-
+            전체 {paginationInfo.totalElements}개 중{' '}
+            {paginationInfo.currentPage * paginationInfo.size + 1}-
             {Math.min(
-              (pagination.currentPage + 1) * pagination.size,
-              pagination.totalElements
+              (paginationInfo.currentPage + 1) * paginationInfo.size,
+              paginationInfo.totalElements,
             )}
           </div>
           <div className="flex justify-center gap-2">
-            {/* 이전 페이지 버튼 */}
             <button
-              onClick={() => setPage(Math.max(0, pagination.currentPage - 1))}
-              disabled={pagination.currentPage === 0}
+              onClick={() => handlePageChange(Math.max(0, currentPage - 1))}
+              disabled={currentPage === 0}
               className={`px-3 py-1 rounded ${
-                pagination.currentPage === 0
+                currentPage === 0
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
@@ -255,8 +312,10 @@ const RequestList = () => {
               이전
             </button>
 
-            {/* 페이지 번호들 */}
-            {getPageNumbers(pagination.currentPage + 1, pagination.totalPages).map((pageNum, index) => (
+            {getPageNumbers(
+              paginationInfo.currentPage + 1,
+              paginationInfo.totalPages,
+            ).map((pageNum, index) =>
               pageNum === '...' ? (
                 <span key={`dot-${index}`} className="px-3 py-1 text-gray-500">
                   {pageNum}
@@ -264,24 +323,27 @@ const RequestList = () => {
               ) : (
                 <button
                   key={pageNum}
-                  onClick={() => setPage(Number(pageNum) - 1)}
+                  onClick={() => handlePageChange(Number(pageNum) - 1)}
                   className={`px-3 py-1 rounded ${
-                    pagination.currentPage === Number(pageNum) - 1
+                    currentPage === Number(pageNum) - 1
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                 >
                   {pageNum}
                 </button>
-              )
-            ))}
+              ),
+            )}
 
-            {/* 다음 페이지 버튼 */}
             <button
-              onClick={() => setPage(Math.min(pagination.totalPages - 1, pagination.currentPage + 1))}
-              disabled={pagination.currentPage === pagination.totalPages - 1}
+              onClick={() =>
+                handlePageChange(
+                  Math.min(paginationInfo.totalPages - 1, currentPage + 1),
+                )
+              }
+              disabled={currentPage === paginationInfo.totalPages - 1}
               className={`px-3 py-1 rounded ${
-                pagination.currentPage === pagination.totalPages - 1
+                currentPage === paginationInfo.totalPages - 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}

@@ -33,13 +33,21 @@ export const requestApi = {
   getAllRequests: async (): Promise<RequestListResponse> => {
     // size를 매우 큰 값으로 설정하여 모든 게시물을 한 번에 가져옴
     const response = await axiosInstance.get(
-      '/api/post?page=0&size=1000'  // 또는 백엔드와 협의하여 페이지네이션 없이 모든 데이터를 반환하는 새 엔드포인트 생성
+      '/api/post?page=0&size=1000', // 또는 백엔드와 협의하여 페이지네이션 없이 모든 데이터를 반환하는 새 엔드포인트 생성
     );
     return response.data;
   },
 
   getRequestById: async (id: number) => {
     const response = await axiosInstance.get<RequestDto>(`/api/post/${id}`);
+    return response.data;
+  },
+
+  // 요청글 삭제 API 추가
+  deleteRequest: async (id: number): Promise<ApiResponse<void>> => {
+    const response = await axiosInstance.delete<ApiResponse<void>>(
+      `${REQUEST_ENDPOINTS.BASE}/${id}`,
+    );
     return response.data;
   },
 };

@@ -31,6 +31,7 @@ export interface RequestDto {
   longitude: number;
   reward: number;
   createdAt: string;
+  removable: boolean;
 }
 
 export interface RequestListResponse {
