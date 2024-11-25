@@ -4,11 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { requestApi } from '@/api/request';
 import type { CreateRequestDto, RequestCategory } from '@/api/request/types';
-import { ApiError } from '@/api/lib/axios';  // ApiError import 추가
+import { ApiError } from '@/api/lib/axios'; // ApiError import 추가
 import useAuthStore from '@/store/useAuthStore';
 import LocationSelectMapComponent from '@/components/common/Map/LocationSelectMapComponent';
 import type { Location } from '@/types/Location';
 import { RequestFormData, DEFAULT_FORM_DATA } from './types';
+import { useQueryClient } from '@tanstack/react-query'; // 추가
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
@@ -21,6 +22,7 @@ const RequestCreate = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<RequestFormData>(DEFAULT_FORM_DATA);
+  const queryClient = useQueryClient(); // 추가
 
   // onLocationSelect 함수를 useCallback으로 감싸기
   const handleLocationSelect = useCallback((location: Location) => {
@@ -29,10 +31,12 @@ const RequestCreate = () => {
   }, []); // 의존성 배열이 비어있으므로 함수가 재생성되지 않음
 
   // index.tsx에 에러 처리 함수 추가
-  const handleError = (error: unknown) => {  // error 타입을 unknown으로 지정
+  const handleError = (error: unknown) => {
+    // error 타입을 unknown으로 지정
     if (error instanceof ApiError) {
       setError(error.message);
-    } else if (error instanceof Error) {  // 일반적인 Error 객체도 처리
+    } else if (error instanceof Error) {
+      // 일반적인 Error 객체도 처리
       setError(error.message);
     } else {
       setError('요청 생성 중 오류가 발생했습니다.');
@@ -82,6 +86,7 @@ const RequestCreate = () => {
       };
 
       await requestApi.createRequest(requestData);
+      await queryClient.invalidateQueries({ queryKey: ['requests'] }); // 추가
       navigate('/requests');
     } catch (error) {
       handleError(error);

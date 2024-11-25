@@ -12,6 +12,7 @@ import { RequestDto } from '@/api/request/types';
 import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import CustomPullToRefresh from './CustomPullToRefresh';
+import useAuthStore from '@/store/useAuthStore';
 
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
@@ -83,6 +84,7 @@ const RequestList = () => {
   const { currentLocation } = useRequestList();
   const [displayCount, setDisplayCount] = useState(5); // 보여줄 게시글 수
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated } = useAuthStore(); // useAuthStore import 및 사용
   const navigate = useNavigate();
 
   // 전체 데이터 가져오기
@@ -192,6 +194,15 @@ const RequestList = () => {
         console.error('Error deleting request:', error);
         toast.error('글 삭제에 실패했습니다.');
       }
+    }
+  };
+
+  const handleWriteClick = () => {
+    if (isAuthenticated) {
+      navigate('/requests/new');
+    } else {
+      toast.error('로그인이 필요한 서비스입니다.');
+      navigate('/login');
     }
   };
 
@@ -349,7 +360,7 @@ const RequestList = () => {
 
       {/* 글쓰기 버튼 */}
       <FloatingButton
-        onClick={() => navigate('/requests/new')}
+        onClick={handleWriteClick}
         className="bg-gray-800 dark:bg-gray-700 hover:bg-gray-700 dark:hover:bg-gray-600 text-white px-6 py-3 rounded-full shadow-lg inline-flex items-center gap-2"
       >
         <span>글쓰기</span>
