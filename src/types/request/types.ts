@@ -34,9 +34,11 @@ export interface RequestDto {
   content: string;
   category: RequestCategory;
   allowGroupFunding: boolean;
-  processingStatus: ProcessingStatus;  // 여기서 enum 사용
+  processingStatus: ProcessingStatus;
   latitude: number;
   longitude: number;
   reward: number;
   createdAt: string;
+  removable: boolean;        // 추가: 삭제 권한 여부
+  currentParticipants: number;  // 추가: 현재 참여자 수
 }

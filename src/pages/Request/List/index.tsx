@@ -13,6 +13,7 @@ import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import CustomPullToRefresh from './CustomPullToRefresh';
 import useAuthStore from '@/store/useAuthStore';
+import { ProcessingStatus } from '@/types/request/types';
 
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
@@ -265,26 +266,73 @@ const RequestList = () => {
                       selectedId === request.id ? '' : 'shadow-lg'
                     } p-4 cursor-pointer`}
                   >
+                    {/* 상단: 단과대학 + 작성자 | 총 금액 + 참여자 수 */}
                     <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          {request.college} · {request.writer}
-                        </span>
-                        <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                          {request.title}
-                        </h2>
-                      </div>
-                      <div className="text-right">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {request.college} · {request.writer}
+                      </span>
+                      {request.allowGroupFunding && (
+                        <div className="text-right">
+                          <div className="text-blue-600 dark:text-blue-400 font-medium">
+                            {(
+                              request.reward * request.currentParticipants
+                            ).toLocaleString()}
+                            원
+                            <span className="text-sm text-gray-500 ml-1">
+                              ({request.reward.toLocaleString()}원 ×{' '}
+                              {request.currentParticipants})
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center justify-end gap-1">
+                            <Users size={14} />
+                            {request.currentParticipants}명 참여 중
+                          </div>
+                        </div>
+                      )}
+                      {!request.allowGroupFunding && (
                         <span className="text-blue-600 dark:text-blue-400 font-medium">
                           {request.reward.toLocaleString()}원
                         </span>
-                      </div>
+                      )}
                     </div>
 
+                    {/* 제목 라인: 제목 + 상태 뱃지 + 내 글 뱃지 */}
+                    <div className="flex items-center gap-2 mb-2">
+                      <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        {request.title}
+                      </h2>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs ${
+                          request.processingStatus ===
+                          ProcessingStatus.NOT_STARTED
+                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : request.processingStatus ===
+                                ProcessingStatus.IN_PROGRESS
+                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        }`}
+                      >
+                        {request.processingStatus ===
+                        ProcessingStatus.NOT_STARTED
+                          ? '대기 중'
+                          : request.processingStatus ===
+                              ProcessingStatus.IN_PROGRESS
+                            ? '진행 중'
+                            : '완료'}
+                      </span>
+                      {request.removable && (
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                          내 글
+                        </span>
+                      )}
+                    </div>
+
+                    {/* 내용 */}
                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
                       {request.content}
                     </p>
 
+                    {/* 하단: 거리 | 시간 */}
                     <div className="flex justify-between items-center text-sm text-gray-500 dark:text-gray-400">
                       {currentLocation && (
                         <Distance
@@ -298,7 +346,8 @@ const RequestList = () => {
                       )}
                       <div className="flex items-center gap-2">
                         {request.allowGroupFunding && (
-                          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full text-xs">
+                          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full text-xs flex items-center gap-1">
+                            <Users size={12} />
                             함께하기
                           </span>
                         )}
@@ -314,32 +363,24 @@ const RequestList = () => {
                     className="bg-white dark:bg-gray-800 shadow-lg rounded-b-lg -mt-1"
                   >
                     <div className="p-4 space-x-3 flex justify-end">
-                      {request.removable ? (
-                        <ActionButton
-                          onClick={() => handleDelete(request.id)}
-                          className="px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-full hover:bg-red-600 dark:hover:bg-red-700 flex items-center gap-2 transition-colors"
+                      <ActionButton
+                        onClick={() => navigate(`/requests/${request.id}`)}
+                        className="px-6 py-2 bg-white dark:bg-gray-700 text-gray-800 dark:text-white border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors shadow-sm"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                         >
-                          <Trash size={16} />글 삭제하기
-                        </ActionButton>
-                      ) : (
-                        <>
-                          <ActionButton
-                            onClick={() => handleAccept(request.id)}
-                            className="px-4 py-2 bg-gray-800 dark:bg-gray-700 text-white rounded-full hover:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-2"
-                          >
-                            수행하기
-                          </ActionButton>
-                          {request.allowGroupFunding && (
-                            <ActionButton
-                              onClick={() => handleJoin(request.id)}
-                              className="px-4 py-2 bg-blue-600 dark:bg-blue-600 text-white rounded-full hover:bg-gray-500 dark:hover:bg-gray-400 flex items-center gap-2"
-                            >
-                              <Users size={16} />
-                              함께하기
-                            </ActionButton>
-                          )}
-                        </>
-                      )}
+                          <path d="M9 18l6-6-6-6" />
+                        </svg>
+                        상세페이지 보기
+                      </ActionButton>
                     </div>
                   </SlideUpActions>
                 </div>

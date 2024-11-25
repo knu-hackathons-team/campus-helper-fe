@@ -32,6 +32,7 @@ export interface RequestDto {
   reward: number;
   createdAt: string;
   removable: boolean;
+  currentParticipants: number;
 }
 
 export interface RequestListResponse {

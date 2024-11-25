@@ -165,6 +165,8 @@ campus-helper-fe
 │  │     ├─ Create
 │  │     │  ├─ index.tsx
 │  │     │  └─ types.ts
+│  │     ├─ Detail
+│  │     │  └─ index.tsx
 │  │     ├─ Join
 │  │     │  └─ index.tsx
 │  │     └─ List
