@@ -5,11 +5,25 @@ import { Users } from 'lucide-react';
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
 import { EstimatedInfo } from '@/components/common/EstimatedInfo';
+import { fundingApi } from '@/api/funding';
 
 const RequestJoin = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { request, isLoading, error, currentLocation } = useRequest(id);
+
+  // 버튼 클릭 핸들러 함수 추가
+  const handleParticipateInFunding = async () => {
+    try {
+      if (!id) return;
+      await fundingApi.participateInFunding(Number(id));
+      // 성공 시 처리 (예: 알림 표시, 페이지 이동 등)
+      navigate('/requests');
+    } catch (error) {
+      // 에러 처리
+      console.error('Failed to participate in funding:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,21 +75,20 @@ const RequestJoin = () => {
 
         {/* 지도 섹션 */}
         <div className="mb-6">
-
           {currentLocation && {
-                  latitude: request.latitude,
-                  longitude: request.longitude,
-                } && (
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <RouteMapComponent
-                start={currentLocation}
-                end={{
-                  latitude: request.latitude,
-                  longitude: request.longitude,
-                }}
-              />
-            </div>
-          )}
+              latitude: request.latitude,
+              longitude: request.longitude,
+            } && (
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <RouteMapComponent
+                  start={currentLocation}
+                  end={{
+                    latitude: request.latitude,
+                    longitude: request.longitude,
+                  }}
+                />
+              </div>
+            )}
           {!currentLocation && (
             <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
               <p className="text-yellow-800 dark:text-yellow-200 text-sm">
@@ -87,18 +100,18 @@ const RequestJoin = () => {
 
         {/* 예상 정보 */}
         {currentLocation && {
-                  latitude: request.latitude,
-                  longitude: request.longitude,
-                } && (
-          <EstimatedInfo
-            currentLocation={currentLocation}
-            targetLocation={{
-              latitude: request.latitude,
-              longitude: request.longitude,
-            }}
-            className="mb-6"
-          />
-        )}
+            latitude: request.latitude,
+            longitude: request.longitude,
+          } && (
+            <EstimatedInfo
+              currentLocation={currentLocation}
+              targetLocation={{
+                latitude: request.latitude,
+                longitude: request.longitude,
+              }}
+              className="mb-6"
+            />
+          )}
 
         {/* 펀딩 현황 */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
@@ -108,11 +121,10 @@ const RequestJoin = () => {
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
               <Users size={20} />
-                        {/* 아래 1명은 백엔드에서 적절한 인원수를 받아올것 */}
-              <span>{1}명 참여 중</span> 
+              <span>{request.currentParticipants}명 참여 중</span>
             </div>
             <div className="text-blue-600 dark:text-blue-400 font-medium">
-              {request.reward.toLocaleString()}원
+              {(request.reward * request.currentParticipants).toLocaleString()}원
             </div>
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -162,6 +174,7 @@ const RequestJoin = () => {
           <button
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
             disabled={!currentLocation}
+            onClick={handleParticipateInFunding}
           >
             <Users size={16} />
             펀딩하기

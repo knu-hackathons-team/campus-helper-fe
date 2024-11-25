@@ -185,15 +185,14 @@ const RequestDetail = () => {
                 <span>{request.currentParticipants}명 참여</span>
               </div>
               <div className="text-blue-600 dark:text-blue-400 font-medium">
-                {request.reward.toLocaleString()}원
+                {(
+                  request.reward * request.currentParticipants
+                ).toLocaleString()}
+                원
               </div>
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              1인당 펀딩 금액:{' '}
-              {(
-                request.reward / Math.max(request.currentParticipants, 1)
-              ).toLocaleString()}
-              원
+              1인당 펀딩 금액: {request.reward}원
             </div>
           </div>
         )}

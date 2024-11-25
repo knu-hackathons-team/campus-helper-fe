@@ -4,11 +4,27 @@ import { useParams, useNavigate } from 'react-router-dom';
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
 import { EstimatedInfo } from '@/components/common/EstimatedInfo';
+import { workApi } from '@/api/work';
+import { Users } from 'lucide-react';
+
 
 const RequestAccept = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { request, isLoading, error, currentLocation } = useRequest(id);
+
+  // 버튼 클릭 핸들러 함수 추가
+  const handleAcceptWork = async () => {
+    try {
+      if (!id) return;
+      await workApi.acceptWork(Number(id));
+      // 성공 시 처리 (예: 알림 표시, 페이지 이동 등)
+      navigate('/requests');
+    } catch (error) {
+      // 에러 처리
+      console.error('Failed to accept work:', error);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -134,6 +150,7 @@ const RequestAccept = () => {
           <button
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
             disabled={!currentLocation}
+            onClick={handleAcceptWork}
           >
             수락하기
           </button>

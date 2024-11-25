@@ -116,14 +116,22 @@ campus-helper-fe
 │  │  │  ├─ index.ts
 │  │  │  └─ types.ts
 │  │  ├─ fetchRoute.tsx
+│  │  ├─ funding
+│  │  │  ├─ constants.ts
+│  │  │  ├─ index.ts
+│  │  │  └─ types.ts
 │  │  ├─ lib
 │  │  │  └─ axios.ts
 │  │  ├─ request
 │  │  │  ├─ constants.ts
 │  │  │  ├─ index.ts
 │  │  │  └─ types.ts
-│  │  └─ types
-│  │     └─ common.ts
+│  │  ├─ types
+│  │  │  └─ common.ts
+│  │  └─ work
+│  │     ├─ constants.ts
+│  │     ├─ index.ts
+│  │     └─ types.ts
 │  ├─ App.css
 │  ├─ App.tsx
 │  ├─ assets
