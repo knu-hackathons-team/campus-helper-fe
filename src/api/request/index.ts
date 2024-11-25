@@ -50,4 +50,15 @@ export const requestApi = {
     );
     return response.data;
   },
+
+  // 내가 작성한 글 불러오기
+  getMyRequests: async (
+    page: number = 0,
+    size: number = 5,
+  ): Promise<RequestListResponse> => {
+    const response = await axiosInstance.get(
+      `${REQUEST_ENDPOINTS.MY_REQUESTS}` //?page=${page}&size=${size}`,
+    );
+    return response.data;
+  },
 };
