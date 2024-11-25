@@ -33,6 +33,7 @@ export interface RequestDto {
   createdAt: string;
   removable: boolean;
   currentParticipants: number;
+  isWorker: boolean;
 }
 
 export interface RequestListResponse {

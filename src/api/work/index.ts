@@ -11,4 +11,11 @@ export const workApi = {
     );
     return response.data;
   },
+  
+  completeWork: async (postId: number): Promise<ApiResponse<void>> => {
+    const response = await axiosInstance.post<ApiResponse<void>>(
+      WORK_ENDPOINTS.COMPLETE(postId)
+    );
+    return response.data;
+  },
 };

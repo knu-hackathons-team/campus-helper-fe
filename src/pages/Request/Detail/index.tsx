@@ -7,7 +7,9 @@ import {
   Trash2,
   Share2,
   Bookmark,
+  Check,
 } from 'lucide-react';
+
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
 import { EstimatedInfo } from '@/components/common/EstimatedInfo';
@@ -16,6 +18,7 @@ import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus } from '@/types/request/types';
+import { workApi } from '@/api/work';
 
 const RequestDetail = () => {
   const navigate = useNavigate();
@@ -173,6 +176,23 @@ const RequestDetail = () => {
           />
         )}
 
+        {/* 금액 정보 */}
+        {!request.allowGroupFunding && (
+          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
+              요청 금액
+            </h2>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                수행 보상
+              </span>
+              <div className="text-blue-600 dark:text-blue-400 font-medium">
+                {request.reward.toLocaleString()}원
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 참여 현황 - allowGroupFunding이 true일 때만 표시 */}
         {request.allowGroupFunding && (
           <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
@@ -297,6 +317,25 @@ const RequestDetail = () => {
                   )}
                 </>
               )}
+              {request.processingStatus === ProcessingStatus.IN_PROGRESS &&
+                request.isWorker && (
+                  <button
+                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex items-center gap-2"
+                    onClick={async () => {
+                      try {
+                        await workApi.completeWork(request.id);
+                        toast.success('수행이 완료되었습니다.');
+                        // 페이지 리프레시 또는 상태 업데이트 로직
+                        window.location.reload();
+                      } catch (error) {
+                        toast.error('수행 완료 처리에 실패했습니다.');
+                      }
+                    }}
+                  >
+                    <Check size={16} />
+                    수행완료
+                  </button>
+                )}
             </>
           )}
         </div>
