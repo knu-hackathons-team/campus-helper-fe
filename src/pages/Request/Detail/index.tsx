@@ -1,5 +1,3 @@
-// src/pages/Request/Detail/index.tsx
-
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -35,6 +33,8 @@ const RequestDetail = () => {
   const { request, isLoading, error, currentLocation } = useRequest(id);
   const { userInfo } = useAuthStore();
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const [finishContent, setFinishContent] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading) {
     return (
@@ -107,6 +107,25 @@ const RequestDetail = () => {
     toast.success(
       isBookmarked ? '북마크가 해제되었습니다.' : '북마크에 추가되었습니다.',
     );
+  };
+
+  const handleComplete = async () => {
+    if (!finishContent.trim()) {
+      toast.error('완료 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await workApi.completeWork(request.id, { finishContent });
+      toast.success('수행이 완료되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['request', id ?? ''] });
+      window.location.reload();
+    } catch (error) {
+      toast.error('수행 완료 처리에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -225,6 +244,30 @@ const RequestDetail = () => {
           </div>
         </div>
 
+        {/* 완료 보고 섹션 */}
+        {request.processingStatus === ProcessingStatus.IN_PROGRESS &&
+          request.isWorker && (
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+              <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
+                완료 보고
+              </h2>
+              <textarea
+                value={finishContent}
+                onChange={(e) => setFinishContent(e.target.value)}
+                placeholder="완료 내용을 입력해주세요..."
+                className="w-full h-24 p-3 border rounded-lg mb-3 bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-300"
+              />
+              <button
+                className="w-full px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleComplete}
+                disabled={isSubmitting || !finishContent.trim()}
+              >
+                <Check size={16} />
+                수행완료
+              </button>
+            </div>
+          )}
+
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-3">
           <button
@@ -295,24 +338,6 @@ const RequestDetail = () => {
                   )}
                 </>
               )}
-              {request.processingStatus === ProcessingStatus.IN_PROGRESS &&
-                request.isWorker && (
-                  <button
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition duration-200 flex items-center gap-2"
-                    onClick={async () => {
-                      try {
-                        await workApi.completeWork(request.id);
-                        toast.success('수행이 완료되었습니다.');
-                        window.location.reload();
-                      } catch (error) {
-                        toast.error('수행 완료 처리에 실패했습니다.');
-                      }
-                    }}
-                  >
-                    <Check size={16} />
-                    수행완료
-                  </button>
-                )}
             </>
           )}
         </div>

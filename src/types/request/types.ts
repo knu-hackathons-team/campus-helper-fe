@@ -42,4 +42,5 @@ export interface RequestDto {
   removable: boolean;        // 추가: 삭제 권한 여부
   currentParticipants: number;  // 추가: 현재 참여자 수
   isWorker: boolean;
+  finishContent: string;
 }

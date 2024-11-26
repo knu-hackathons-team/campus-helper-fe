@@ -34,6 +34,7 @@ export interface RequestDto {
   removable: boolean;
   currentParticipants: number;
   isWorker: boolean;
+  finishContent: string;
 }
 
 export interface RequestListResponse {
