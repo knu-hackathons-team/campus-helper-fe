@@ -6,9 +6,11 @@ import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
 import { EstimatedInfo } from '@/components/common/EstimatedInfo';
 import { fundingApi } from '@/api/funding';
+import { useQueryClient } from '@tanstack/react-query'; // 추가
 
 const RequestJoin = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient(); // 추가
   const { id } = useParams();
   const { request, isLoading, error, currentLocation } = useRequest(id);
 
@@ -17,10 +19,9 @@ const RequestJoin = () => {
     try {
       if (!id) return;
       await fundingApi.participateInFunding(Number(id));
-      // 성공 시 처리 (예: 알림 표시, 페이지 이동 등)
+      await queryClient.invalidateQueries({ queryKey: ['requests'] }); // 추가
       navigate('/requests');
     } catch (error) {
-      // 에러 처리
       console.error('Failed to participate in funding:', error);
     }
   };

@@ -296,7 +296,7 @@ const RequestList = () => {
                       )}
                     </div>
 
-                    {/* 제목 라인: 제목 + 상태 뱃지 + 내 글 뱃지 */}
+                    {/* 제목 라인: 제목 + 상태 뱃지 + 내 글 뱃지 + 수행자 뱃지 */}
                     <div className="flex items-center gap-2 mb-2">
                       <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         {request.title}
@@ -322,7 +322,12 @@ const RequestList = () => {
                       </span>
                       {request.removable && (
                         <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                          내 글
+                          내가 쓴 글
+                        </span>
+                      )}
+                      {request.isWorker && (
+                        <span className="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-red-800 dark:bg-red-900 dark:text-orange-200">
+                          내가 수행중인 글
                         </span>
                       )}
                     </div>

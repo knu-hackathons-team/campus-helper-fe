@@ -19,6 +19,7 @@ import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus } from '@/types/request/types';
 import { workApi } from '@/api/work';
+import { useQueryClient } from '@tanstack/react-query'; // 추가
 
 const RequestDetail = () => {
   const navigate = useNavigate();
@@ -61,10 +62,14 @@ const RequestDetail = () => {
 
   const isOwner = request.removable;
 
+// RequestDetail의 handleDelete 함수
+const queryClient = useQueryClient();
+
   const handleDelete = async () => {
     if (window.confirm('정말로 이 글을 삭제하시겠습니까?')) {
       try {
         await requestApi.deleteRequest(request.id);
+        await queryClient.invalidateQueries({ queryKey: ['requests'] });
         toast.success('글이 삭제되었습니다.');
         navigate('/requests');
       } catch (error) {
