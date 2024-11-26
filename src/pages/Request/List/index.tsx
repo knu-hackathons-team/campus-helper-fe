@@ -1,9 +1,8 @@
 // src/pages/Request/List/index.tsx
-
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { Users, Plus, MapPin, Trash } from 'lucide-react';
+import { Plus, MapPin } from 'lucide-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Distance } from '@/components/common/Distance';
 import { useRequestList } from '@/hooks/useRequest';
@@ -13,14 +12,13 @@ import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import CustomPullToRefresh from './CustomPullToRefresh';
 import useAuthStore from '@/store/useAuthStore';
-import { ProcessingStatus } from '@/types/request/types';
-
-const RequestCard = styled.div`
-  transition: transform 0.2s ease;
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
+import {
+  StatusBadge,
+  UserBadge,
+  GroupFundingBadge,
+  RequestInfo,
+  RequestCard,
+} from '@/components/common/Request';
 
 const ActionButton = styled.button`
   transition: all 0.3s ease;
@@ -271,29 +269,11 @@ const RequestList = () => {
                       <span className="text-sm text-gray-500 dark:text-gray-400">
                         {request.college} · {request.writer}
                       </span>
-                      {request.allowGroupFunding && (
-                        <div className="text-right">
-                          <div className="text-blue-600 dark:text-blue-400 font-medium">
-                            {(
-                              request.reward * request.currentParticipants
-                            ).toLocaleString()}
-                            원
-                            <span className="text-sm text-gray-500 ml-1">
-                              ({request.reward.toLocaleString()}원 ×{' '}
-                              {request.currentParticipants})
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-500 flex items-center justify-end gap-1">
-                            <Users size={14} />
-                            {request.currentParticipants}명 참여 중
-                          </div>
-                        </div>
-                      )}
-                      {!request.allowGroupFunding && (
-                        <span className="text-blue-600 dark:text-blue-400 font-medium">
-                          {request.reward.toLocaleString()}원
-                        </span>
-                      )}
+                      <RequestInfo
+                        reward={request.reward}
+                        currentParticipants={request.currentParticipants}
+                        allowGroupFunding={request.allowGroupFunding}
+                      />
                     </div>
 
                     {/* 제목 라인: 제목 + 상태 뱃지 + 내 글 뱃지 + 수행자 뱃지 */}
@@ -301,35 +281,9 @@ const RequestList = () => {
                       <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                         {request.title}
                       </h2>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-xs ${
-                          request.processingStatus ===
-                          ProcessingStatus.NOT_STARTED
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : request.processingStatus ===
-                                ProcessingStatus.IN_PROGRESS
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        }`}
-                      >
-                        {request.processingStatus ===
-                        ProcessingStatus.NOT_STARTED
-                          ? '대기 중'
-                          : request.processingStatus ===
-                              ProcessingStatus.IN_PROGRESS
-                            ? '진행 중'
-                            : '완료'}
-                      </span>
-                      {request.removable && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                          내가 쓴 글
-                        </span>
-                      )}
-                      {request.isWorker && (
-                        <span className="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-red-800 dark:bg-red-900 dark:text-orange-200">
-                          내가 수행중인 글
-                        </span>
-                      )}
+                      <StatusBadge status={request.processingStatus} />
+                      {request.removable && <UserBadge type="owner" />}
+                      {request.isWorker && <UserBadge type="worker" />}
                     </div>
 
                     {/* 내용 */}
@@ -350,12 +304,7 @@ const RequestList = () => {
                         />
                       )}
                       <div className="flex items-center gap-2">
-                        {request.allowGroupFunding && (
-                          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full text-xs flex items-center gap-1">
-                            <Users size={12} />
-                            함께하기
-                          </span>
-                        )}
+                        {request.allowGroupFunding && <GroupFundingBadge />}
                         <span>
                           {new Date(request.createdAt).toLocaleString()}
                         </span>

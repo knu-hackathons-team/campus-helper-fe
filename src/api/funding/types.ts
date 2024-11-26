@@ -1,10 +1,25 @@
 // src/api/funding/types.ts
-import type { ApiResponse } from '../types/common';
+import { ProcessingStatus } from '../request/types';
 
-export interface FundingResponse {
-  // 백엔드 응답 타입에 맞게 수정 필요
-  fundingId: number;
-  postId: number;
-  status: string;
-  amount: number;
+export interface MyFundingListResponse {
+  content: Array<{
+    id: number;
+    college: string;
+    writer: string;
+    title: string;
+    content: string;
+    category: 'INFO' | 'HELP';
+    allowGroupFunding: boolean;
+    processingStatus: ProcessingStatus;
+    latitude: number;
+    longitude: number;
+    reward: number;
+    createdAt: string;
+    removable: boolean;
+    currentParticipants: number;
+  }>;
+  page: number;
+  size: number;
+  totalPages: number;
+  totalElements: number;
 }

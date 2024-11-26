@@ -1,3 +1,5 @@
+// src/pages/Request/Detail/index.tsx
+
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -19,7 +21,13 @@ import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus } from '@/types/request/types';
 import { workApi } from '@/api/work';
-import { useQueryClient } from '@tanstack/react-query'; // 추가
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  StatusBadge,
+  UserBadge,
+  GroupFundingBadge,
+  RequestInfo,
+} from '@/components/common/Request';
 
 const RequestDetail = () => {
   const navigate = useNavigate();
@@ -62,8 +70,8 @@ const RequestDetail = () => {
 
   const isOwner = request.removable;
 
-// RequestDetail의 handleDelete 함수
-const queryClient = useQueryClient();
+  // RequestDetail의 handleDelete 함수
+  const queryClient = useQueryClient();
 
   const handleDelete = async () => {
     if (window.confirm('정말로 이 글을 삭제하시겠습니까?')) {
@@ -127,9 +135,17 @@ const queryClient = useQueryClient();
               </button>
             </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            {request.title}
-          </h1>
+
+          {/* 제목 섹션 */}
+          <div className="flex items-center gap-2 mb-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {request.title}
+            </h1>
+            <StatusBadge status={request.processingStatus} />
+            {request.removable && <UserBadge type="owner" />}
+            {request.isWorker && <UserBadge type="worker" />}
+          </div>
+
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
             <div className="flex items-center gap-1">
               <Clock size={16} />
@@ -182,72 +198,30 @@ const queryClient = useQueryClient();
         )}
 
         {/* 금액 정보 */}
-        {!request.allowGroupFunding && (
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-              요청 금액
-            </h2>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                수행 보상
-              </span>
-              <div className="text-blue-600 dark:text-blue-400 font-medium">
-                {request.reward.toLocaleString()}원
-              </div>
+        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+          <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
+            {request.allowGroupFunding ? '현재 참여 현황' : '요청 금액'}
+          </h2>
+          <RequestInfo
+            reward={request.reward}
+            currentParticipants={request.currentParticipants}
+            allowGroupFunding={request.allowGroupFunding}
+          />
+          {request.allowGroupFunding && (
+            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              1인당 펀딩 금액: {request.reward.toLocaleString()}원
             </div>
-          </div>
-        )}
-
-        {/* 참여 현황 - allowGroupFunding이 true일 때만 표시 */}
-        {request.allowGroupFunding && (
-          <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-            <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-              현재 참여 현황
-            </h2>
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                <Users size={20} />
-                <span>{request.currentParticipants}명 참여</span>
-              </div>
-              <div className="text-blue-600 dark:text-blue-400 font-medium">
-                {(
-                  request.reward * request.currentParticipants
-                ).toLocaleString()}
-                원
-              </div>
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              1인당 펀딩 금액: {request.reward}원
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* 요청 상태 */}
         <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
           <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
             요청 상태
           </h2>
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                진행 상태
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-sm ${
-                  request.processingStatus === ProcessingStatus.NOT_STARTED
-                    ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                    : request.processingStatus === ProcessingStatus.IN_PROGRESS
-                      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                }`}
-              >
-                {request.processingStatus === ProcessingStatus.NOT_STARTED
-                  ? '대기 중'
-                  : request.processingStatus === ProcessingStatus.IN_PROGRESS
-                    ? '진행 중'
-                    : '완료'}
-              </span>
-            </div>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600 dark:text-gray-300">진행 상태</span>
+            <StatusBadge status={request.processingStatus} />
           </div>
         </div>
 
@@ -316,8 +290,7 @@ const queryClient = useQueryClient();
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
                       onClick={() => navigate(`/requests/${request.id}/join`)}
                     >
-                      <Users size={16} />
-                      함께하기
+                      <GroupFundingBadge />
                     </button>
                   )}
                 </>
@@ -330,7 +303,6 @@ const queryClient = useQueryClient();
                       try {
                         await workApi.completeWork(request.id);
                         toast.success('수행이 완료되었습니다.');
-                        // 페이지 리프레시 또는 상태 업데이트 로직
                         window.location.reload();
                       } catch (error) {
                         toast.error('수행 완료 처리에 실패했습니다.');

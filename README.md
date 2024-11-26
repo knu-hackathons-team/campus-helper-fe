@@ -140,10 +140,15 @@ campus-helper-fe
 │  │  ├─ common
 │  │  │  ├─ Distance.tsx
 │  │  │  ├─ EstimatedInfo.tsx
-│  │  │  └─ Map
-│  │  │     ├─ BaseMapComponent.tsx
-│  │  │     ├─ LocationSelectMapComponent.tsx
-│  │  │     └─ RouteMapComponent.tsx
+│  │  │  ├─ Map
+│  │  │  │  ├─ BaseMapComponent.tsx
+│  │  │  │  ├─ LocationSelectMapComponent.tsx
+│  │  │  │  └─ RouteMapComponent.tsx
+│  │  │  └─ Request
+│  │  │     ├─ index.ts
+│  │  │     ├─ RequestBadge.tsx
+│  │  │     ├─ RequestCard.tsx
+│  │  │     └─ RequestInfo.tsx
 │  │  ├─ Layout
 │  │  │  ├─ Navbar.tsx
 │  │  │  └─ RootLayout.tsx
