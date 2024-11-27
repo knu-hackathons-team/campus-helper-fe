@@ -8,13 +8,13 @@ import {
   Share2,
   Bookmark,
   Check,
+  Star,
 } from 'lucide-react';
-
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
 import { EstimatedInfo } from '@/components/common/EstimatedInfo';
 import useAuthStore from '@/store/useAuthStore';
-import { useState } from 'react';
+import React, { useState, useCallback, memo, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus } from '@/types/request/types';
@@ -27,15 +27,216 @@ import {
   RequestInfo,
 } from '@/components/common/Request';
 
+interface StarRatingProps {
+  onRate: (rating: number) => void;
+  onSubmit: () => void;
+  disabled?: boolean;
+}
+
+const StarRating: React.FC<StarRatingProps> = ({
+  onRate,
+  onSubmit,
+  disabled,
+}) => {
+  const [hoveredRating, setHoveredRating] = useState<number>(0);
+  const [selectedRating, setSelectedRating] = useState<number>(0);
+
+  const handleRating = (rating: number) => {
+    setSelectedRating(rating);
+    onRate(rating);
+  };
+
+  return (
+    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
+      <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
+        수행자 평가
+      </h2>
+      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+        수행자의 서비스에 대해 평가해주세요. 평가 제출 전까지 별점을 변경할 수
+        있습니다.
+      </p>
+      <div className="flex items-center gap-1 mb-2">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <button
+            key={rating}
+            onMouseEnter={() => setHoveredRating(rating)}
+            onMouseLeave={() => setHoveredRating(0)}
+            onClick={() => handleRating(rating)}
+            className="p-1 transition-colors duration-200"
+            disabled={disabled}
+          >
+            <Star
+              size={24}
+              className={`${
+                rating <= (hoveredRating || selectedRating)
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'fill-none text-gray-300 dark:text-gray-500'
+              } transition-colors duration-200`}
+            />
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-col gap-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {selectedRating > 0
+            ? '평가를 제출하려면 아래 버튼을 클릭해주세요.'
+            : hoveredRating > 0
+              ? `${hoveredRating}점을 선택하시겠습니까?`
+              : '별을 클릭하여 평가해주세요.'}
+        </p>
+        {selectedRating > 0 && (
+          <button
+            onClick={onSubmit}
+            className="w-full px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={disabled}
+          >
+            <Check size={16} />
+            {disabled ? '평가 제출 중...' : '평가 제출하기'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 새로운 지도 컴포넌트 (최상위에 정의)
+const MapSection = memo(
+  ({
+    currentLocation,
+    targetLocation,
+  }: {
+    currentLocation: { latitude: number; longitude: number };
+    targetLocation: { latitude: number; longitude: number };
+  }) => (
+    <div className="mb-6">
+      <div className="rounded-lg overflow-hidden shadow-lg">
+        <RouteMapComponent start={currentLocation} end={targetLocation} />
+      </div>
+      <EstimatedInfo
+        currentLocation={currentLocation}
+        targetLocation={targetLocation}
+        className="mt-4"
+      />
+    </div>
+  ),
+  (prevProps, nextProps) =>
+    prevProps.currentLocation.latitude === nextProps.currentLocation.latitude &&
+    prevProps.currentLocation.longitude ===
+      nextProps.currentLocation.longitude &&
+    prevProps.targetLocation.latitude === nextProps.targetLocation.latitude &&
+    prevProps.targetLocation.longitude === nextProps.targetLocation.longitude,
+);
+
 const RequestDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const queryClient = useQueryClient();
   const { request, isLoading, error, currentLocation } = useRequest(id);
   const { userInfo } = useAuthStore();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [finishContent, setFinishContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<number>(0);
+  const [isRatingSubmitting, setIsRatingSubmitting] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
+  const memoizedCurrentLocation = useMemo(
+    () => currentLocation,
+    [currentLocation?.latitude, currentLocation?.longitude],
+  );
+
+  const memoizedTargetLocation = useMemo(
+    () =>
+      request
+        ? {
+            latitude: request.latitude,
+            longitude: request.longitude,
+          }
+        : null,
+    [request?.latitude, request?.longitude],
+  );
+
+  const handleRateComplete = useCallback(
+    (rating: number) => {
+      if (!id) return;
+      queryClient.invalidateQueries({ queryKey: ['request', id] });
+    },
+    [queryClient, id],
+  );
+
+  const handleDelete = async () => {
+    if (!request || !window.confirm('정말로 이 글을 삭제하시겠습니까?')) return;
+
+    try {
+      await requestApi.deleteRequest(request.id);
+      await queryClient.invalidateQueries({ queryKey: ['requests'] });
+      toast.success('글이 삭제되었습니다.');
+      navigate('/requests');
+    } catch (error) {
+      toast.error('글 삭제에 실패했습니다.');
+    }
+  };
+
+  const handleEdit = () => {
+    if (!request) return;
+    navigate(`/requests/${request.id}/edit`);
+  };
+
+  const handleShare = async () => {
+    if (!request) return;
+    try {
+      await navigator.share({
+        title: request.title,
+        text: request.content,
+        url: window.location.href,
+      });
+    } catch (error) {
+      toast.error('공유하기를 지원하지 않는 환경입니다.');
+    }
+  };
+
+  const handleBookmark = () => {
+    setIsBookmarked(!isBookmarked);
+    toast.success(
+      isBookmarked ? '북마크가 해제되었습니다.' : '북마크에 추가되었습니다.',
+    );
+  };
+
+  const handleComplete = async () => {
+    if (!request || !finishContent.trim()) {
+      toast.error('완료 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      await workApi.completeWork(request.id, { finishContent });
+      toast.success('수행이 완료되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['request', id ?? ''] });
+      window.location.reload();
+    } catch (error) {
+      toast.error('수행 완료 처리에 실패했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRateSubmit = async () => {
+    if (!request || !selectedRating) return;
+
+    try {
+      setIsRatingSubmitting(true);
+      await workApi.rateWork(request.id, { rate: selectedRating });
+      toast.success('평가가 완료되었습니다.');
+      window.location.reload();
+    } catch (error) {
+      toast.error('평가 제출에 실패했습니다.');
+    } finally {
+      setIsRatingSubmitting(false);
+    }
+  };
+
+  // 3. 로딩 상태 처리
   if (isLoading) {
     return (
       <div className="max-w-2xl mx-auto py-6 px-4">
@@ -48,6 +249,7 @@ const RequestDetail = () => {
     );
   }
 
+  // 4. 에러 상태 처리
   if (error || !request) {
     return (
       <div className="max-w-2xl mx-auto py-6 px-4">
@@ -68,66 +270,7 @@ const RequestDetail = () => {
     );
   }
 
-  const isOwner = request.removable;
-
-  // RequestDetail의 handleDelete 함수
-  const queryClient = useQueryClient();
-
-  const handleDelete = async () => {
-    if (window.confirm('정말로 이 글을 삭제하시겠습니까?')) {
-      try {
-        await requestApi.deleteRequest(request.id);
-        await queryClient.invalidateQueries({ queryKey: ['requests'] });
-        toast.success('글이 삭제되었습니다.');
-        navigate('/requests');
-      } catch (error) {
-        toast.error('글 삭제에 실패했습니다.');
-      }
-    }
-  };
-
-  const handleEdit = () => {
-    navigate(`/requests/${request.id}/edit`);
-  };
-
-  const handleShare = async () => {
-    try {
-      await navigator.share({
-        title: request.title,
-        text: request.content,
-        url: window.location.href,
-      });
-    } catch (error) {
-      toast.error('공유하기를 지원하지 않는 환경입니다.');
-    }
-  };
-
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    toast.success(
-      isBookmarked ? '북마크가 해제되었습니다.' : '북마크에 추가되었습니다.',
-    );
-  };
-
-  const handleComplete = async () => {
-    if (!finishContent.trim()) {
-      toast.error('완료 내용을 입력해주세요.');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      await workApi.completeWork(request.id, { finishContent });
-      toast.success('수행이 완료되었습니다.');
-      queryClient.invalidateQueries({ queryKey: ['request', id ?? ''] });
-      window.location.reload();
-    } catch (error) {
-      toast.error('수행 완료 처리에 실패했습니다.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  // 5. request가 존재할 때의 메인 UI 렌더링
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
@@ -183,37 +326,33 @@ const RequestDetail = () => {
         </div>
 
         {/* 지도 섹션 */}
-        <div className="mb-6">
-          {currentLocation && (
-            <div className="rounded-lg overflow-hidden shadow-lg">
-              <RouteMapComponent
-                start={currentLocation}
-                end={{
-                  latitude: request.latitude,
-                  longitude: request.longitude,
-                }}
-              />
-            </div>
-          )}
-          {!currentLocation && (
+        {memoizedTargetLocation && memoizedCurrentLocation ? (
+          <MapSection
+            currentLocation={memoizedCurrentLocation}
+            targetLocation={memoizedTargetLocation}
+          />
+        ) : (
+          <div className="mb-6">
             <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg">
               <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                 경로를 확인하려면 위치 정보 접근을 허용해주세요.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* 예상 정보 */}
-        {currentLocation && (
-          <EstimatedInfo
-            currentLocation={currentLocation}
-            targetLocation={{
-              latitude: request.latitude,
-              longitude: request.longitude,
-            }}
-            className="mb-6"
-          />
+        {/* 완료 보고 내용 표시 */}
+        {request.finishContent && (
+          <div className="bg-green-50 dark:bg-green-900 rounded-lg p-4 mb-6">
+            <h2 className="font-medium text-green-900 dark:text-green-100 mb-3">
+              완료 보고 내용
+            </h2>
+            <div className="bg-white dark:bg-green-800 rounded-lg p-4">
+              <p className="text-gray-700 dark:text-green-100 whitespace-pre-wrap">
+                {request.finishContent}
+              </p>
+            </div>
+          </div>
         )}
 
         {/* 금액 정보 */}
@@ -268,6 +407,17 @@ const RequestDetail = () => {
             </div>
           )}
 
+        {/* 평가 섹션 */}
+        {request.removable &&
+          request.processingStatus === ProcessingStatus.IN_PROGRESS &&
+          request.finishContent && ( // finishContent가 존재할 때만 평가 섹션을 표시
+            <StarRating
+              onRate={setSelectedRating}
+              onSubmit={handleRateSubmit}
+              disabled={isRatingSubmitting}
+            />
+          )}
+
         {/* 액션 버튼 */}
         <div className="flex justify-end gap-3">
           <button
@@ -277,7 +427,7 @@ const RequestDetail = () => {
             뒤로가기
           </button>
 
-          {isOwner ? (
+          {request.removable ? (
             <>
               <button
                 onClick={handleEdit}

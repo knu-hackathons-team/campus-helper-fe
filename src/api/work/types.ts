@@ -32,3 +32,7 @@ export interface MyWorkListResponse {
   totalPages: number;
   totalElements: number;
 }
+
+export interface RateWorkRequest {
+  rate: number;
+} 
