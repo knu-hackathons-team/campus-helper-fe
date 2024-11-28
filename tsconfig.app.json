@@ -22,8 +22,8 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false, //사용되지 않는 **로컬 변수(local variables)**를 감지합니다.
+    "noUnusedParameters": false, //함수 매개변수가 선언되었지만 사용되지 않은 경우를 감지합니다.
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
