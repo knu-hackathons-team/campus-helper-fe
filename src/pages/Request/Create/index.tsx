@@ -126,7 +126,7 @@ const RequestCreate = () => {
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
             >
               <option value="HELP">도움 요청</option>
-              <option value="INFO">정보 공유</option>
+              <option value="INFO">정보 요청</option>
             </select>
           </FormField>
 

@@ -122,6 +122,9 @@ campus-helper-fe
 │  │  │  └─ types.ts
 │  │  ├─ lib
 │  │  │  └─ axios.ts
+│  │  ├─ mypage
+│  │  │  ├─ constants.ts
+│  │  │  └─ index.ts
 │  │  ├─ request
 │  │  │  ├─ constants.ts
 │  │  │  ├─ index.ts

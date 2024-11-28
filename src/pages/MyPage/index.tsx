@@ -5,9 +5,11 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus, RequestListResponse } from '@/api/request/types';
 import { workApi } from '@/api/work';
+import { mypageApi } from '@/api/mypage';
 import { fundingApi } from '@/api/funding';
 import styled from '@emotion/styled';
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
@@ -63,6 +65,7 @@ const MyPage = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userInfo = useAuthStore((state) => state.userInfo);
   const [activeTab, setActiveTab] = useState<TabType>('written');
+  const queryClient = useQueryClient();
 
   // 내 요청 목록 가져오기
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -118,6 +121,16 @@ const MyPage = () => {
     initialPageParam: 0,
     enabled: isAuthenticated,
   });
+
+  // 그리고 충전하기 버튼 핸들러는 이렇게:
+  const handleChargePoint = async () => {
+    try {
+      await mypageApi.getpoint();  // 1. 서버에서 포인트 충전
+      await useAuthStore.getState().fetchUserInfo(); // 2.서버에서 최신 정보 다시 조회 후 Zustand store 업데이트
+    } catch (error) {
+      console.error('포인트 조회 실패:', error);
+    }
+  };
 
   const totalPosts = data?.pages[0]?.totalElements || 0;
   const totalAccepted = acceptedData?.pages[0]?.totalElements || 0;
@@ -271,9 +284,17 @@ const MyPage = () => {
                 보유 포인트
               </span>
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-              {userInfo.point.toLocaleString()} P
-            </span>
+            <div className="flex items-center gap-4">
+              <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
+                {userInfo.point.toLocaleString()} P
+              </span>
+              <button
+                onClick={handleChargePoint} // 위에서 정의한 handleChargePoint 함수 사용
+                className="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                충전하기
+              </button>
+            </div>
           </div>
         </div>
 
@@ -307,7 +328,7 @@ const MyPage = () => {
             >
               <StatCard
                 label="펀딩중인 요청"
-                value={isLoadingAccepted ? '로딩 중...' : totalAccepted}
+                value={isLoadingAccepted ? '로딩 중...' : totalFunding}
               />
             </div>
           </div>

@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Users,
+  User,
   Clock,
   MapPin,
   Edit2,
@@ -277,8 +278,12 @@ const RequestDetail = () => {
         {/* 헤더 섹션 */}
         <div className="mb-6">
           <div className="flex justify-between items-start mb-2">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {request.college} · {request.writer}
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 gap-2">
+              {request.college} ·
+              <div className="flex items-center">
+                <User className="w-4 h-4" />
+                {request.writer}
+              </div>
             </div>
             <div className="flex gap-2">
               <button

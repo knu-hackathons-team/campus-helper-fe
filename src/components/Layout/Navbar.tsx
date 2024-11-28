@@ -2,6 +2,7 @@ import { useState } from 'react';
 import styled from '@emotion/styled';
 import { Menu, X, Home, Bell, User, Sun, Moon } from 'lucide-react';
 import { useThemeStore } from '@/store/useThemeStore';
+import useAuthStore from '@/store/useAuthStore';
 
 const NavContainer = styled.nav`
   position: fixed;
@@ -23,6 +24,7 @@ const ThemeButton = styled.button`
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { isDarkMode, toggleDarkMode } = useThemeStore();
+  const userInfo = useAuthStore((state)=> state.userInfo);
 
   return (
     <NavContainer className="bg-white dark:bg-gray-800">
@@ -38,8 +40,10 @@ const Navbar = () => {
           <a href="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
             <Bell className="w-5 h-5" />
           </a>
-          <a href="/mypage" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+          <a href="/mypage" className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
             <User className="w-5 h-5" />
+            <span className="text-sm font-medium">{userInfo?.nickname}</span>
+
           </a>
           <ThemeButton
             onClick={toggleDarkMode}

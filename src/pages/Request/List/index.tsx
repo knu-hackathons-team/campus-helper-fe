@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
-import { Plus, MapPin } from 'lucide-react';
+import { Plus, MapPin, User } from 'lucide-react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { Distance } from '@/components/common/Distance';
 import { useRequestList } from '@/hooks/useRequest';
@@ -266,8 +266,12 @@ const RequestList = () => {
                   >
                     {/* 상단: 단과대학 + 작성자 | 총 금액 + 참여자 수 */}
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {request.college} · {request.writer}
+                      <span className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        {request.college} ·
+                        <div className="flex items-center">
+                          <User className="w-4 h-4" />
+                          {request.writer}
+                        </div>
                       </span>
                       <RequestInfo
                         reward={request.reward}

@@ -27,9 +27,9 @@ export const RequestInfo = ({
   return (
     <div className={`text-right ${className}`}>
       <div className="text-blue-600 dark:text-blue-400 font-medium">
-        {(reward * currentParticipants).toLocaleString()}원
+        {(reward).toLocaleString()}원
         <span className="text-sm text-gray-500 ml-1">
-          ({reward.toLocaleString()}원 × {currentParticipants})
+          ({(reward/currentParticipants).toLocaleString()}원 × {currentParticipants})
         </span>
       </div>
       <div className="text-sm text-gray-500 flex items-center justify-end gap-1">
