@@ -110,6 +110,281 @@ Campus Helper는 캠퍼스 내에서 실시간 정보나 즉각적인 도움이 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
 
 
+# 클래스 다이어그램 상세 설명
+
+## 1. User 클래스
+### 데이터
+- `id: number` - 사용자의 고유 식별자.
+- `nickname: string` - 사용자의 닉네임.
+- `college: string` - 사용자가 속한 대학 정보.
+- `point: number` - 사용자의 포인트 잔액.
+- `isVerified: boolean` - 사용자의 인증 여부.
+
+### 메서드
+- `decreasePoint(amount: number)`
+  - 사용자의 포인트를 감소시킵니다.
+  - 요청 작성이나 펀딩 참여 시 호출됩니다.
+  - `amount`는 차감할 포인트의 양을 의미합니다.
+
+- `increasePoint(amount: number)`
+  - 사용자의 포인트를 증가시킵니다.
+  - 작업 수행을 완료하고 요청자로부터 평가를 받은 후 보상이 지급될 때 호출됩니다.
+  - `amount`는 추가할 포인트의 양입니다.
+
+---
+
+## 2. Request 클래스
+### 데이터
+- `id: number` - 요청의 고유 식별자.
+- `title: string` - 요청 제목.
+- `content: string` - 요청 상세 내용.
+- `reward: number` - 요청 작성자가 설정한 보상 금액.
+- `college: string` - 요청과 관련된 대학 정보.
+- `writerId: number` - 요청 작성자의 ID.
+- `assignedWorkerId: number | null` - 요청에 할당된 작업자의 ID.
+- `processingStatus: ProcessingStatus` - 요청의 진행 상태 (`NOT_STARTED`, `IN_PROGRESS`, `COMPLETED`).
+- `allowGroupFunding: boolean` - 그룹 펀딩 허용 여부.
+- `currentFundingAmount: number` - 현재 펀딩으로 모인 금액.
+- `latitude: number` - 요청 위치의 위도.
+- `longitude: number` - 요청 위치의 경도.
+- `finishContent: string` - 요청 완료 시 작성되는 내용.
+
+### 메서드
+- `assignWorker(worker: User)`
+  - 특정 작업자를 요청에 할당합니다.
+  - 요청의 상태가 `IN_PROGRESS`로 변경되며, 펀딩은 종료됩니다.
+  - `worker`는 요청을 수행할 사용자 객체입니다.
+
+- `addParticipant(fundingAmount: number)`
+  - 펀딩 가능한 요청에 참여자를 추가합니다.
+  - `fundingAmount`는 참여자가 요청에 추가하는 금액을 의미합니다.
+  - `allowGroupFunding`이 `true`인 경우에만 호출 가능합니다.
+  - `currentFundingAmount`를 업데이트합니다.
+
+- `stopFunding()`
+  - 요청에 대한 펀딩을 종료합니다.
+  - 작업자가 할당되거나 요청이 특정 조건을 충족하면 호출됩니다.
+
+- `complete(rate: number)`
+  - 요청의 최종 완료를 처리합니다.
+  - `rate`는 작업자에 대한 평가 점수(0~5)이며, 평가가 완료되면 요청 상태가 `COMPLETED`로 변경됩니다.
+  - 보상 지급과 관련된 처리를 수행합니다.
+
+- `isFinishContentVisible(userId: number): boolean`
+  - 요청 완료 내용(`finishContent`)을 특정 사용자가 볼 수 있는지 여부를 반환합니다.
+  - 요청 작성자, 펀딩 참여자, 작업자만 내용을 확인할 수 있습니다.
+
+- `calculateTotalReward(): number`
+  - 요청 작성자가 받을 총 보상 금액을 계산합니다.
+  - 총 금액은 요청 금액(`reward`)과 펀딩으로 추가된 금액(`currentFundingAmount`)의 합으로 계산됩니다.
+
+---
+
+## 3. Work 클래스
+### 데이터
+- `id: number` - 작업의 고유 식별자.
+- `requestId: number` - 작업이 연결된 요청의 ID.
+- `workerId: number` - 작업 수행자의 ID.
+- `isCompleted: boolean` - 작업 완료 여부.
+- `finishContent: string` - 작업 완료 시 작성되는 내용.
+- `startedAt: DateTime` - 작업 시작 시간.
+- `endedAt: DateTime | null` - 작업 종료 시간.
+
+### 메서드
+- `workStart()`
+  - 작업자가 작업을 시작했음을 기록합니다.
+  - 작업의 `startedAt` 값을 현재 시간으로 설정합니다.
+
+- `submitCompletion()`
+  - 작업자가 작업 완료 내용을 작성합니다.
+  - `finishContent`에 완료 내용을 저장하고, `isCompleted`를 `true`로 설정합니다.
+
+---
+
+## 4. Funding 클래스
+### 데이터
+- `id: number` - 펀딩의 고유 식별자.
+- `requestId: number` - 펀딩이 연결된 요청의 ID.
+- `funderId: number` - 펀딩에 참여한 사용자의 ID.
+- `amount: number` - 펀딩 금액.
+
+### 메서드
+- **Funding 클래스에는 별도의 메서드가 없습니다.**
+  - 이 클래스는 단순히 요청과 사용자 간의 펀딩 데이터를 저장하는 데 사용됩니다.
+  - 속성(`id`, `requestId`, `funderId`, `amount`)을 통해 펀딩 정보를 관리합니다.
+
+---
+
+## 5. ProcessingStatus (열거형)
+### 값
+- `NOT_STARTED`
+  - 요청 또는 작업이 아직 시작되지 않은 상태.
+- `IN_PROGRESS`
+  - 요청 또는 작업이 진행 중인 상태.
+  - 작업자가 요청에 할당되었거나 작업을 수행 중임을 나타냅니다.
+- `COMPLETED`
+  - 요청 또는 작업이 완료된 상태.
+  - 요청 평가와 보상 처리가 완료되었음을 의미합니다.
+
+---
+
+## 메서드 간 상호작용
+### 1. 요청 작성 및 펀딩
+- `Request.addParticipant()` 메서드로 다른 사용자가 요청에 참여할 수 있습니다.
+- `Request.stopFunding()`은 작업자가 할당되면 자동으로 호출됩니다.
+
+### 2. 작업 완료
+- 작업자는 `Work.submitCompletion()`으로 작업을 완료하고 내용을 작성합니다.
+- 요청 작성자는 `Request.complete(rate)`를 호출해 작업자 평가와 요청 완료를 처리합니다.
+
+```
+classDiagram
+    class Member {
+        -Long id
+        -String loginId
+        -String password
+        -String nickname
+        -String college
+        -int point
+        -Role role
+        +decreasePoint(int)
+        +increasePoint(int)
+    }
+
+    class Post {
+        -Long id
+        -String title
+        -String content
+        -HelpCategory category
+        -boolean allowGroupFunding
+        -double latitude
+        -double longitude
+        -int reward
+        -ProcessStatus status
+        -int currentParticipants
+        +addParticipant(int)
+        +assignWorker(Member)
+    }
+
+    class Work {
+        -Long id
+        -WorkStatus status
+        -LocalDateTime startedAt
+        -LocalDateTime completedAt
+        +workStart()
+        +complete()
+        +isCorrectWorker(Member)
+    }
+
+    class Funding {
+        -Long id
+        -int amount
+        -ParticipationStatus status
+    }
+
+    class Role {
+        <<enumeration>>
+        USER
+        ADMIN
+    }
+
+    class ProcessStatus {
+        <<enumeration>>
+        NOT_STARTED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    class WorkStatus {
+        <<enumeration>>
+        NOT_STARTED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    Member "1" --o "N" Post : writes
+    Member "1" --o "N" Work : performs
+    Member "1" --o "N" Funding : participates
+    Post "1" --o "1" Work : has
+    Post "1" --o "N" Funding : receives
+```
+
+```
+classDiagram
+    class User {
+        +id: number
+        +nickname: string
+        +college: string
+        +point: number
+        +isVerified: boolean
+        +decreasePoint(amount: number)
+        +increasePoint(amount: number)
+    }
+
+    class Request {
+        +id: number
+        +title: string
+        +content: string
+        +reward: number
+        +college: string
+        +writerId: number
+        +assignedWorkerId: number|null
+        +processingStatus: ProcessingStatus
+        +allowGroupFunding: boolean
+        +currentFundingAmount: number
+        +latitude: number
+        +longitude: number
+        +finishContent: string
+        +assignWorker(worker: User)
+        +addParticipant(fundingAmount: number)
+        +stopFunding()
+        +complete(rate: number)
+        +isFinishContentVisible(userId: number): boolean
+        +calculateTotalReward(): number
+    }
+
+    class Work {
+        +id: number
+        +requestId: number
+        +workerId: number
+        +isCompleted: boolean
+        +finishContent: string
+        +startedAt: DateTime
+        +endedAt: DateTime|null
+        +workStart()
+        +submitCompletion()
+    }
+
+    class Funding {
+        +id: number
+        +requestId: number
+        +funderId: number
+        +amount: number
+    }
+
+    class ProcessingStatus {
+        <<enumeration>>
+        NOT_STARTED
+        IN_PROGRESS
+        COMPLETED
+    }
+
+    User "1" ..> "*" Request : writes as Requester
+    User "1" ..> "*" Work : performs as Worker
+    User "1" ..> "*" Funding : participates in
+    Request "1" .. "0..1" Work : contains work
+    Request "1" *-- "*" Funding : allows when allowGroupFunding
+    Request --> ProcessingStatus
+
+    note for User "사용자는 요청을 작성하거나 작업자로 참여하며\n펀딩에도 참여 가능. 포인트로 시스템 내 활동을 관리."
+    note for Request "요청글은 작성자에 의해 생성되며\n그룹 펀딩 허용 시 다른 사용자도 참여 가능.\n요청 완료는 평가 후 처리됨."
+    note for Work "작업은 하나의 요청에 대해 생성되며\n작업자는 작업 완료 내용을 작성하고 요청자가 평가.\n완료 여부는 요청에서 관리됨."
+    note for Funding "다중 참여를 처리하며 참여 금액과 정보를 저장.\n수행자가 지정되면 더 이상 참여 불가능."
+    note for ProcessingStatus "요청의 진행 상태를 나타냄.\nNOT_STARTED → IN_PROGRESS → COMPLETED"
+
+```
+
+
 ```
 campus-helper-fe
 ├─ .eslintrc.cjs
