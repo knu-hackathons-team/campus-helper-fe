@@ -361,20 +361,58 @@ const RequestDetail = () => {
         )}
 
         {/* 금액 정보 */}
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-6">
-          <h2 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-            {request.allowGroupFunding ? '현재 참여 현황' : '요청 금액'}
-          </h2>
-          <RequestInfo
-            reward={request.reward}
-            currentParticipants={request.currentParticipants}
-            allowGroupFunding={request.allowGroupFunding}
-          />
-          {request.allowGroupFunding && (
-            <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-              1인당 펀딩 금액: {request.reward.toLocaleString()}원
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+              {request.allowGroupFunding ? '참여 현황' : '요청 금액'}
+            </h2>
+            {request.allowGroupFunding && (
+              <GroupFundingBadge className="ml-2" />
+            )}
+          </div>
+
+          <div className="space-y-3">
+            {/* 개별 참여 금액 */}
+            <div>
+              <div className="flex items-baseline">
+                <span className="text-base font-bold text-gray-900 dark:text-gray-100">
+                  {(
+                    request.reward / request.currentParticipants
+                  ).toLocaleString()}
+                </span>
+                <span className="ml-1 text-gray-600 dark:text-gray-400">
+                  원
+                </span>
+              </div>
+              <div className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {request.allowGroupFunding ? '1인당 참여 금액' : '요청 금액'}
+              </div>
             </div>
-          )}
+
+            {/* 그룹 참여 정보 */}
+            {request.allowGroupFunding && (
+              <div className="pt-3 border-t border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <div className="text-3xl font-semibold text-gray-900 dark:text-gray-100">
+                      {request.reward.toLocaleString()}원
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      총 참여 금액
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      {request.currentParticipants}명
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      현재 참여자
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* 요청 상태 */}
@@ -488,7 +526,7 @@ const RequestDetail = () => {
                       className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
                       onClick={() => navigate(`/requests/${request.id}/join`)}
                     >
-                      <GroupFundingBadge />
+                      함께하기
                     </button>
                   )}
                 </>

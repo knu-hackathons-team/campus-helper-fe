@@ -125,7 +125,8 @@ const RequestJoin = () => {
               <span>{request.currentParticipants}명 참여 중</span>
             </div>
             <div className="text-blue-600 dark:text-blue-400 font-medium">
-              {(request.reward * request.currentParticipants).toLocaleString()}원
+              {(request.reward / request.currentParticipants).toLocaleString()}
+              원
             </div>
           </div>
           <div className="text-sm text-gray-500 dark:text-gray-400">
@@ -153,7 +154,8 @@ const RequestJoin = () => {
           </h2>
           <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 text-sm space-y-2">
             <li>
-              최초 요청자가 설정한 금액({request.reward.toLocaleString()}
+              최초 요청자가 설정한 금액(
+              {(request.reward / request.currentParticipants).toLocaleString()}
               원)으로 참여할 수 있습니다.
             </li>
             <li>
