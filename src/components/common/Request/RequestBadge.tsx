@@ -1,5 +1,5 @@
 import { ProcessingStatus } from '@/types/request/types';
-import { Users, Wallet, Clock, Loader2, CheckCircle, Crown, Hammer } from 'lucide-react';
+import { Users, Wallet, Clock, Loader2, CheckCircle, Crown, Hammer, Activity,Target,UserCheck,Loader,Radar   } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
 
 interface StatusBadgeProps {
@@ -55,14 +55,14 @@ export const StatusBadge = ({ status, className = '' }: StatusBadgeProps) => {
 export const UserBadge = ({ type, className = '' }: UserBadgeProps) => {
   const config: Record<UserBadgeProps['type'], BadgeConfig> = {
     owner: {
-      color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+      color: 'bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400',
       text: '내가 쓴 글',
       icon: Crown
     },
     worker: {
       color: 'bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200',
       text: '내가 수행중인 글',
-      icon: Hammer
+      icon: Activity 
     },
     funder: {
       color: 'bg-lime-100 text-lime-800 dark:bg-lime-900 dark:text-lime-200',
@@ -82,7 +82,7 @@ export const UserBadge = ({ type, className = '' }: UserBadgeProps) => {
 };
 
 export const GroupFundingBadge = ({ className = '' }: GroupFundingBadgeProps) => (
-  <span className={`px-2 py-0.5 bg-violet-100 dark:bg-violet-900 text-violet-600 dark:text-violet-400 rounded-full text-xs flex items-center gap-1 ${className}`}>
+  <span className={`px-2 py-0.5 bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 rounded-full text-xs flex items-center gap-1 ${className}`}>
     <Users size={12} />
     함께하기
   </span>
