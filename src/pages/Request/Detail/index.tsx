@@ -10,7 +10,7 @@ import {
   Bookmark,
   Check,
   Star,
-  Wallet
+  Wallet,
 } from 'lucide-react';
 import RouteMapComponent from '@/components/common/Map/RouteMapComponent';
 import { useRequest } from '@/hooks/useRequest';
@@ -19,6 +19,7 @@ import useAuthStore from '@/store/useAuthStore';
 import React, { useState, useCallback, memo, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { requestApi } from '@/api/request';
+import { fundingApi } from '@/api/funding';
 import { ProcessingStatus } from '@/types/request/types';
 import { workApi } from '@/api/work';
 import { useQueryClient } from '@tanstack/react-query';
@@ -179,6 +180,19 @@ const RequestDetail = () => {
     }
   };
 
+  const handleWithdrawFunding = async () => {
+    if (!request || !window.confirm('펀딩 참여를 취소하시겠습니까?')) return;
+
+    try {
+      await fundingApi.withdrawFunding(request.id);
+      toast.success('펀딩 참여가 취소되었습니다.');
+      queryClient.invalidateQueries({ queryKey: ['request', id] });
+      window.location.reload();
+    } catch (error) {
+      toast.error('펀딩 취소에 실패했습니다.');
+    }
+  };
+
   const handleEdit = () => {
     if (!request) return;
     navigate(`/requests/${request.id}/edit`);
@@ -313,7 +327,6 @@ const RequestDetail = () => {
             {request.removable && <UserBadge type="owner" />}
             {request.isWorker && <UserBadge type="worker" />}
             {request.isFunder && <UserBadge type="funder" />}
-
           </div>
 
           <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-4">
@@ -464,97 +477,116 @@ const RequestDetail = () => {
             />
           )}
 
-{/* 액션 버튼 */}
-{request.isFunder ? (
-  <div>
-    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Wallet size={20} className="text-lime-600 dark:text-lime-400" />
-        <h2 className="font-medium text-gray-900 dark:text-gray-100">펀딩 참여 상태</h2>
-      </div>
-      <p className="text-gray-600 dark:text-gray-300">
-        이미 이 요청의 펀딩에 참여하셨습니다.
-      </p>
-    </div>
-    <div className="flex justify-end">
-      <button
-        onClick={() => navigate(-1)}
-        className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
-      >
-        뒤로가기
-      </button>
-    </div>
-  </div>
-) : (
-  <div className="flex justify-end gap-3">
-    <button
-      onClick={() => navigate(-1)}
-      className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
-    >
-      뒤로가기
-    </button>
-
-    {request.removable ? (
-      <>
-        <button
-          onClick={handleEdit}
-          disabled={request.processingStatus !== ProcessingStatus.NOT_STARTED}
-          className={`px-6 py-2 bg-gray-600 text-white rounded-lg flex items-center gap-2 transition duration-200 ${
-            request.processingStatus !== ProcessingStatus.NOT_STARTED
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-gray-700'
-          }`}
-          title={
-            request.processingStatus !== ProcessingStatus.NOT_STARTED
-              ? '진행 중인 요청은 수정할 수 없습니다'
-              : ''
-          }
-        >
-          <Edit2 size={16} />
-          수정하기
-        </button>
-        <button
-          onClick={handleDelete}
-          disabled={request.processingStatus !== ProcessingStatus.NOT_STARTED}
-          className={`px-6 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2 transition duration-200 ${
-            request.processingStatus !== ProcessingStatus.NOT_STARTED
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-red-700'
-          }`}
-          title={
-            request.processingStatus !== ProcessingStatus.NOT_STARTED
-              ? '진행 중인 요청은 삭제할 수 없습니다'
-              : ''
-          }
-        >
-          <Trash2 size={16} />
-          삭제하기
-        </button>
-      </>
-    ) : (
-      <>
-        {request.processingStatus === ProcessingStatus.NOT_STARTED && (
-          <>
-            <button
-              className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-200"
-              onClick={() => navigate(`/requests/${request.id}/accept`)}
-            >
-              수행하기
-            </button>
-            {request.allowGroupFunding && (
+        {/* 액션 버튼 */}
+        {request.isFunder && !request.removable ? (
+          <div>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Wallet
+                  size={20}
+                  className="text-lime-600 dark:text-lime-400"
+                />
+                <h2 className="font-medium text-gray-900 dark:text-gray-100">
+                  펀딩 참여 상태
+                </h2>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="text-gray-600 dark:text-gray-300">
+                  이미 이 요청의 펀딩에 참여하셨습니다.
+                </p>
+                {request.processingStatus === ProcessingStatus.NOT_STARTED && (
+                  <button
+                    onClick={handleWithdrawFunding}
+                    className="px-4 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors duration-200"
+                  >
+                    펀딩 취소
+                  </button>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-end">
               <button
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
-                onClick={() => navigate(`/requests/${request.id}/join`)}
+                onClick={() => navigate(-1)}
+                className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
               >
-                함께하기
+                뒤로가기
               </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition duration-200"
+            >
+              뒤로가기
+            </button>
+
+            {request.removable ? (
+              <>
+                <button
+                  onClick={handleEdit}
+                  disabled={
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                  }
+                  className={`px-6 py-2 bg-gray-600 text-white rounded-lg flex items-center gap-2 transition duration-200 ${
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-gray-700'
+                  }`}
+                  title={
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                      ? '진행 중인 요청은 수정할 수 없습니다'
+                      : ''
+                  }
+                >
+                  <Edit2 size={16} />
+                  수정하기
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                  }
+                  className={`px-6 py-2 bg-red-600 text-white rounded-lg flex items-center gap-2 transition duration-200 ${
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'hover:bg-red-700'
+                  }`}
+                  title={
+                    request.processingStatus !== ProcessingStatus.NOT_STARTED
+                      ? '진행 중인 요청은 삭제할 수 없습니다'
+                      : ''
+                  }
+                >
+                  <Trash2 size={16} />
+                  삭제하기
+                </button>
+              </>
+            ) : (
+              <>
+                {request.processingStatus === ProcessingStatus.NOT_STARTED && (
+                  <>
+                    <button
+                      className="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition duration-200"
+                      onClick={() => navigate(`/requests/${request.id}/accept`)}
+                    >
+                      수행하기
+                    </button>
+                    {request.allowGroupFunding && (
+                      <button
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
+                        onClick={() => navigate(`/requests/${request.id}/join`)}
+                      >
+                        함께하기
+                      </button>
+                    )}
+                  </>
+                )}
+              </>
             )}
-          </>
+          </div>
         )}
-      </>
-    )}
-  </div>
-)}
       </div>
     </div>
   );

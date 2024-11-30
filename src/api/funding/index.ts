@@ -9,6 +9,11 @@ export const fundingApi = {
     return response.data;
   },
 
+  withdrawFunding: async (postId: number) => {
+    const response = await axiosInstance.delete(FUNDING_ENDPOINTS.WITHDRAW(postId));
+    return response.data;
+  },
+
   getMyFundings: async (page: number): Promise<MyFundingListResponse> => {
     const response = await axiosInstance.get<MyFundingListResponse>(
       `${FUNDING_ENDPOINTS.MY_FUNDINGS}?page=${page}&size=5`
