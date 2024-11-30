@@ -35,6 +35,7 @@ export interface RequestDto {
   currentParticipants: number;
   isWorker: boolean;
   finishContent: string;
+  isFunder: boolean;
 }
 
 export interface RequestListResponse {

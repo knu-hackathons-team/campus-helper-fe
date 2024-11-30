@@ -253,6 +253,8 @@ const RequestList = () => {
                   <StatusBadge status={request.processingStatus} />
                   {request.removable && <UserBadge type="owner" />}
                   {request.isWorker && <UserBadge type="worker" />}
+                  {request.isFunder && <UserBadge type="funder" />}
+
                 </div>
 
                 <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">

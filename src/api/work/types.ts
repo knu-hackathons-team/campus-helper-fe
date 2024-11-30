@@ -26,6 +26,7 @@ export interface MyWorkListResponse {
     createdAt: string;
     removable: boolean;
     currentParticipants: number;
+    isFunder: boolean;
   }>;
   page: number;
   size: number;

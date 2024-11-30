@@ -31,7 +31,7 @@ const Navbar = () => {
       {/* PC/태블릿 네비게이션 */}
       <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto px-4 h-16">
         <a href="/" className="text-xl font-bold text-gray-00 dark:text-gray-100">
-          Campus Help
+          Campus Helper
         </a>
         <div className="flex items-center gap-4">
           <a href="/" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">

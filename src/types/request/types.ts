@@ -43,4 +43,5 @@ export interface RequestDto {
   currentParticipants: number;  // 추가: 현재 참여자 수
   isWorker: boolean;
   finishContent: string;
+  isFunder: boolean;
 }

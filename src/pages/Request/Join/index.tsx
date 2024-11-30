@@ -142,7 +142,7 @@ const RequestJoin = () => {
             </h2>
             <div className="flex justify-between items-center text-lg font-medium text-gray-900 dark:text-gray-100">
               <span>펀딩 참여 금액</span>
-              <span>{request.reward.toLocaleString()}원</span>
+              <span>{(request.reward / request.currentParticipants).toLocaleString()}원</span>
             </div>
           </div>
         </div>

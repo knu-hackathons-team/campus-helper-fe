@@ -17,6 +17,7 @@ export interface MyFundingListResponse {
     createdAt: string;
     removable: boolean;
     currentParticipants: number;
+    isFunder: boolean;
   }>;
   page: number;
   size: number;
