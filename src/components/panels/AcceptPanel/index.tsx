@@ -2,7 +2,8 @@
 import { Check, User } from 'lucide-react';
 import { StatusBadge } from '@/components/common/Request';
 import { RequestDto } from '@/api/request/types';
-
+import { useNavigate} from 'react-router-dom';
+import useAuthStore from '@/store/useAuthStore';
 interface AcceptPanelProps {
   request: RequestDto;
   onConfirm: () => Promise<void>;
@@ -10,6 +11,17 @@ interface AcceptPanelProps {
 }
 
 const AcceptPanel = ({ request, onConfirm, onCancel }: AcceptPanelProps) => {
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleAcceptClick = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    onConfirm();
+  };
+
   return (
     <div className="space-y-6">
       {/* 상단 헤더 섹션 */}
@@ -74,11 +86,11 @@ const AcceptPanel = ({ request, onConfirm, onCancel }: AcceptPanelProps) => {
             취소
           </button>
           <button
-            onClick={onConfirm}
+            onClick={handleAcceptClick}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
-            수행하기
+            {isAuthenticated ? '수행하기' : '로그인하고 수행하기'}
           </button>
         </div>
       </div>

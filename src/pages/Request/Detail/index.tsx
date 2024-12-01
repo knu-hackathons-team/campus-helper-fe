@@ -648,8 +648,9 @@ const RequestDetail = () => {
           {(showAcceptPanel || showJoinPanel) && (
             <>
               {/* 데스크톱 패널 */}
-              <div className="hidden md:block md:sticky md:top-[5.5rem] w-full md:max-w-lg h-fit"> {/* 네비게이션 바 높이만큼 top 값 조정 */}
-                
+              <div className="hidden md:block md:sticky md:top-[5.5rem] w-full md:max-w-lg h-fit">
+                {' '}
+                {/* 네비게이션 바 높이만큼 top 값 조정 */}
                 <SlidePanel
                   isOpen={showAcceptPanel || showJoinPanel}
                   onClose={() => {
@@ -681,35 +682,36 @@ const RequestDetail = () => {
 
               {/* 모바일 패널 */}
               <div className="md:hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 p-4">
-      <div className="w-full max-w-lg">
-        <SlidePanel
-          isOpen={showAcceptPanel || showJoinPanel}
-          onClose={() => {
-            setShowAcceptPanel(false);
-            setShowJoinPanel(false);
-          }}
-        >
-                  {showAcceptPanel ? (
-                    <AcceptPanel
-                      request={request}
-                      onConfirm={async () => {
-                        await handleAcceptWork();
-                        setShowAcceptPanel(false);
-                      }}
-                      onCancel={() => setShowAcceptPanel(false)}
-                    />
-                  ) : (
-                    <JoinPanel
-                      request={request}
-                      onConfirm={async () => {
-                        await handleParticipateInFunding();
-                        setShowJoinPanel(false);
-                      }}
-                      onCancel={() => setShowJoinPanel(false)}
-                    />
-                  )}
-                </SlidePanel>
-              </div>    </div>
+                <div className="w-full max-w-lg">
+                  <SlidePanel
+                    isOpen={showAcceptPanel || showJoinPanel}
+                    onClose={() => {
+                      setShowAcceptPanel(false);
+                      setShowJoinPanel(false);
+                    }}
+                  >
+                    {showAcceptPanel ? (
+                      <AcceptPanel
+                        request={request}
+                        onConfirm={async () => {
+                          await handleAcceptWork();
+                          setShowAcceptPanel(false);
+                        }}
+                        onCancel={() => setShowAcceptPanel(false)}
+                      />
+                    ) : (
+                      <JoinPanel
+                        request={request}
+                        onConfirm={async () => {
+                          await handleParticipateInFunding();
+                          setShowJoinPanel(false);
+                        }}
+                        onCancel={() => setShowJoinPanel(false)}
+                      />
+                    )}
+                  </SlidePanel>
+                </div>{' '}
+              </div>
             </>
           )}
         </div>

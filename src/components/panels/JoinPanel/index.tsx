@@ -2,6 +2,8 @@
 import { Users, User, Check } from 'lucide-react';
 import { StatusBadge } from '@/components/common/Request';
 import { RequestDto } from '@/api/request/types';
+import { useNavigate} from 'react-router-dom';
+import useAuthStore from '@/store/useAuthStore';
 
 interface JoinPanelProps {
   request: RequestDto;
@@ -10,6 +12,17 @@ interface JoinPanelProps {
 }
 
 const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
+  const { isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+
+  const handleJoinClick = () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    onConfirm();
+  };
+
   return (
     <div className="space-y-6">
       {/* 상단 헤더 섹션 */}
@@ -68,7 +81,7 @@ const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
           {[
             `동일한 금액(${request.reward.toLocaleString()}원)으로 같은 도움을 받을 수 있습니다`,
             '요청이 완료되면 수행자의 도움을 함께 받을 수 있습니다',
-            '수행 완료 시 모든 참여자에게 결과가 공유됩니다'
+            '수행 완료 시 모든 참여자에게 결과가 공유됩니다',
           ].map((benefit, index) => (
             <li key={index} className="flex items-start gap-3">
               <div className="mt-1">
@@ -96,11 +109,11 @@ const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
             취소
           </button>
           <button
-            onClick={onConfirm}
+            onClick={handleJoinClick}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200 flex items-center gap-2"
           >
             <Users className="w-4 h-4" />
-            함께하기
+            {isAuthenticated ? '함께하기' : '로그인하고 함께하기'}
           </button>
         </div>
       </div>
