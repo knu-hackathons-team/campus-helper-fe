@@ -110,6 +110,7 @@ Campus Helper는 캠퍼스 내에서 실시간 정보나 즉각적인 도움이 
 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
 
+
 ```
 campus-helper-fe
 ├─ .eslintrc.cjs
@@ -121,6 +122,9 @@ campus-helper-fe
 ├─ package.json
 ├─ postcss.config.js
 ├─ public
+│  ├─ ddip.svg
+│  ├─ ddip2.svg
+│  ├─ ddip3.svg
 │  └─ vite.svg
 ├─ README.md
 ├─ src
@@ -169,6 +173,13 @@ campus-helper-fe
 │  │  ├─ Layout
 │  │  │  ├─ Navbar.tsx
 │  │  │  └─ RootLayout.tsx
+│  │  ├─ panels
+│  │  │  ├─ AcceptPanel
+│  │  │  │  └─ index.tsx
+│  │  │  ├─ JoinPanel
+│  │  │  │  └─ index.tsx
+│  │  │  └─ SlidePanel
+│  │  │     └─ index.tsx
 │  │  └─ user
 │  │     ├─ UserInfo.tsx
 │  │     └─ UserInfoUpdater.tsx
@@ -189,18 +200,15 @@ campus-helper-fe
 │  │  │  └─ index.tsx
 │  │  ├─ MyPage
 │  │  │  └─ index.tsx
+│  │  ├─ Notifications
+│  │  │  └─ index.tsx
 │  │  └─ Request
-│  │     ├─ Accept
-│  │     │  └─ index.tsx
 │  │     ├─ Create
 │  │     │  ├─ index.tsx
 │  │     │  └─ types.ts
 │  │     ├─ Detail
 │  │     │  └─ index.tsx
-│  │     ├─ Join
-│  │     │  └─ index.tsx
 │  │     └─ List
-│  │        ├─ CustomPullToRefresh.tsx
 │  │        └─ index.tsx
 │  ├─ store
 │  │  ├─ useAuthStore.ts

@@ -7,13 +7,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // 새
 import Home from './pages/Home';
 import RequestList from './pages/Request/List';
 import Navbar from './components/Layout/Navbar';
-import RequestAccept from './pages/Request/Accept';
-import RequestJoin from './pages/Request/Join';
 import RequestCreate from './pages/Request/Create';
 import RequestDetail from './pages/Request/Detail';
 import Login from './pages/Auth/Login';
 import SignUp from './pages/Auth/SignUp';
 import MyPage from './pages/MyPage';
+import Notifications from './pages/Notifications';
 
 // 임시 페이지 컴포넌트들 (나중에 실제 컴포넌트로 교체)
 // const 임시컴포넌트이름 = () => <div>요청 상세</div>;
@@ -45,12 +44,13 @@ function App() {
               {/* 요청 관련 */}
               <Route path="/requests" element={<RequestList />} />
               <Route path="/requests/:id" element={<RequestDetail />} />
-              <Route path="/requests/:id/accept" element={<RequestAccept />} />
-              <Route path="/requests/:id/join" element={<RequestJoin />} />
               <Route path="/requests/new" element={<RequestCreate />} />
 
               {/* 마이페이지 */}
               <Route path="/mypage" element={<MyPage />} />
+
+              {/* 최상위에 추가 */}
+              <Route path="/notifications" element={<Notifications />} />
             </Routes>
           </RootLayout>
         </div>
