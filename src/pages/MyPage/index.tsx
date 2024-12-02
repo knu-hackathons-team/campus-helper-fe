@@ -1,7 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '@/store/useAuthStore';
 import { User, Coins } from 'lucide-react';
-import { useInfiniteQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
 import { requestApi } from '@/api/request';
 import { ProcessingStatus, RequestListResponse } from '@/api/request/types';
 import { workApi } from '@/api/work';
@@ -9,8 +9,76 @@ import { mypageApi } from '@/api/mypage';
 import { fundingApi } from '@/api/funding';
 import styled from '@emotion/styled';
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 
+// 파일 최상단 import 문 아래에 추가
+interface BaseRequest {
+  id: number;
+  title: string;
+  content: string;
+  reward: number;
+  createdAt: string;
+  processingStatus: ProcessingStatus;
+  college: string;
+  writer: string;
+  category: 'INFO' | 'HELP';
+  allowGroupFunding: boolean;
+}
+
+// 페이지네이션 응답의 기본 구조
+interface BasePageResponse<T> {
+  content: T[];
+  page: number;
+  totalPages: number;
+  totalElements: number;
+}
+
+// 각 요청 타입별 특화된 인터페이스
+interface WrittenRequest extends BaseRequest {
+  isWorker: boolean;
+  finishContent: string;
+}
+
+interface AcceptedRequest extends BaseRequest {
+  // 수락한 요청만의 특별한 필드가 있다면 여기에 추가
+}
+
+interface FundingRequest extends BaseRequest {
+  isFunder: boolean;
+}
+
+// 각 API 응답 타입
+type WrittenRequestResponse = BasePageResponse<WrittenRequest>;
+type AcceptedRequestResponse = BasePageResponse<AcceptedRequest>;
+type FundingRequestResponse = BasePageResponse<FundingRequest>;
+
+interface TabConfigType {
+  written: {
+    title: string;
+    data: InfiniteData<WrittenRequestResponse> | undefined;
+    isLoading: boolean;
+    hasNextPage: boolean | undefined;
+    fetchNextPage: () => Promise<void>;
+    isFetchingNextPage: boolean;
+  };
+  accepted: {
+    title: string;
+    data: InfiniteData<AcceptedRequestResponse> | undefined;
+    isLoading: boolean;
+    hasNextPage: boolean | undefined;
+    fetchNextPage: () => Promise<void>;
+    isFetchingNextPage: boolean;
+  };
+  funding: {
+    title: string;
+    data: InfiniteData<FundingRequestResponse> | undefined;
+    isLoading: boolean;
+    hasNextPage: boolean | undefined;
+    fetchNextPage: () => Promise<void>;
+    isFetchingNextPage: boolean;
+  };
+}
+
+// 요청 카드에 호버 효과를 주기 위한 스타일 컴포넌트
 const RequestCard = styled.div`
   transition: transform 0.2s ease;
   &:hover {
@@ -18,6 +86,10 @@ const RequestCard = styled.div`
   }
 `;
 
+/**
+ * 처리 상태를 표시하는 뱃지 컴포넌트
+ * 각 상태별로 다른 색상과 텍스트를 표시합니다
+ */
 const StatusBadge = ({ status }: { status: ProcessingStatus }) => {
   const statusConfig = {
     [ProcessingStatus.NOT_STARTED]: {
@@ -35,7 +107,6 @@ const StatusBadge = ({ status }: { status: ProcessingStatus }) => {
   };
 
   const config = statusConfig[status];
-
   return (
     <span className={`px-2 py-1 rounded-full text-xs ${config.color}`}>
       {config.text}
@@ -43,6 +114,10 @@ const StatusBadge = ({ status }: { status: ProcessingStatus }) => {
   );
 };
 
+/**
+ * 통계 카드 컴포넌트
+ * 활동 통계에서 각 항목을 표시하는데 사용됩니다
+ */
 const StatCard = ({
   label,
   value,
@@ -50,7 +125,7 @@ const StatCard = ({
   label: string;
   value: string | number;
 }) => (
-  <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div className="p-4 bg-white dark:bg-gray-900 rounded-lg shadow hover:shadow-lg transition-shadow">
     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
       {value}
     </p>
@@ -58,84 +133,116 @@ const StatCard = ({
   </div>
 );
 
+// 탭 타입 정의
 type TabType = 'written' | 'accepted' | 'funding';
+
+// URL의 탭 파라미터가 유효한 값인지 확인하는 함수
+const isValidTab = (tab: string | null): tab is TabType => {
+  return tab === 'written' || tab === 'accepted' || tab === 'funding';
+};
 
 const MyPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // URL에서 탭 정보를 가져오고 유효성 검사
+  const queryParams = new URLSearchParams(location.search);
+  const urlTab = queryParams.get('tab');
+  const initialTab: TabType = isValidTab(urlTab) ? urlTab : 'written';
+
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userInfo = useAuthStore((state) => state.userInfo);
-  const [activeTab, setActiveTab] = useState<TabType>('written');
-  const queryClient = useQueryClient();
 
-  // 내 요청 목록 가져오기
+  /**
+   * 탭 변경 처리 함수
+   * 탭을 변경하고 URL도 함께 업데이트합니다
+   */
+  const handleTabChange = (tab: TabType) => {
+    setActiveTab(tab);
+    navigate(`?tab=${tab}`, { replace: true });
+  };
+
+  /**
+   * 포인트 충전 처리 함수
+   * 포인트를 충전하고 사용자 정보를 업데이트합니다
+   */
+  const handleChargePoint = async () => {
+    try {
+      await mypageApi.getpoint();
+      await useAuthStore.getState().fetchUserInfo();
+    } catch (error) {
+      console.error('포인트 조회 실패:', error);
+    }
+  };
+
+  // 내 요청 목록 조회
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
+    useInfiniteQuery<
+      WrittenRequestResponse,
+      Error,
+      InfiniteData<WrittenRequestResponse>,
+      string[],
+      number
+    >({
       queryKey: ['myRequests'],
-      queryFn: ({ pageParam }) => requestApi.getMyRequests(pageParam as number),
-      getNextPageParam: (lastPage: RequestListResponse) => {
-        if (lastPage.page < lastPage.totalPages - 1) {
-          return lastPage.page + 1;
-        }
-        return undefined;
-      },
+      queryFn: ({ pageParam = 0 }) => requestApi.getMyRequests(pageParam),
+      getNextPageParam: (lastPage) =>
+        lastPage.page < lastPage.totalPages - 1 ? lastPage.page + 1 : undefined,
       initialPageParam: 0,
       enabled: isAuthenticated,
     });
 
-  // 내가 수락한 요청 목록 가져오기
+  // 내가 수락한 요청 목록 조회
   const {
     data: acceptedData,
     fetchNextPage: fetchNextAccepted,
     hasNextPage: hasNextAccepted,
     isFetchingNextPage: isFetchingNextAccepted,
     isLoading: isLoadingAccepted,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<
+    AcceptedRequestResponse,
+    Error,
+    InfiniteData<AcceptedRequestResponse>,
+    string[],
+    number
+  >({
     queryKey: ['acceptedRequests'],
-    queryFn: ({ pageParam }) => workApi.getMyWorks(pageParam as number),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.page < lastPage.totalPages - 1) {
-        return lastPage.page + 1;
-      }
-      return undefined;
-    },
+    queryFn: ({ pageParam = 0 }) => workApi.getMyWorks(pageParam),
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages - 1 ? lastPage.page + 1 : undefined,
     initialPageParam: 0,
     enabled: isAuthenticated,
   });
 
-  // 내가 펀딩중인 요청 목록 가져오기
+  // 내가 펀딩중인 요청 목록 조회
   const {
     data: fundingData,
     fetchNextPage: fetchNextFunding,
     hasNextPage: hasNextFunding,
     isFetchingNextPage: isFetchingNextFunding,
     isLoading: isLoadingFunding,
-  } = useInfiniteQuery({
+  } = useInfiniteQuery<
+    FundingRequestResponse,
+    Error,
+    InfiniteData<FundingRequestResponse>,
+    string[],
+    number
+  >({
     queryKey: ['myFundings'],
-    queryFn: ({ pageParam }) => fundingApi.getMyFundings(pageParam as number),
-    getNextPageParam: (lastPage) => {
-      if (lastPage.page < lastPage.totalPages - 1) {
-        return lastPage.page + 1;
-      }
-      return undefined;
-    },
+    queryFn: ({ pageParam = 0 }) => fundingApi.getMyFundings(pageParam),
+    getNextPageParam: (lastPage) =>
+      lastPage.page < lastPage.totalPages - 1 ? lastPage.page + 1 : undefined,
     initialPageParam: 0,
     enabled: isAuthenticated,
   });
 
-  // 그리고 충전하기 버튼 핸들러는 이렇게:
-  const handleChargePoint = async () => {
-    try {
-      await mypageApi.getpoint();  // 1. 서버에서 포인트 충전
-      await useAuthStore.getState().fetchUserInfo(); // 2.서버에서 최신 정보 다시 조회 후 Zustand store 업데이트
-    } catch (error) {
-      console.error('포인트 조회 실패:', error);
-    }
-  };
-
+  // 각 탭별 총 건수 계산
   const totalPosts = data?.pages[0]?.totalElements || 0;
   const totalAccepted = acceptedData?.pages[0]?.totalElements || 0;
   const totalFunding = fundingData?.pages[0]?.totalElements || 0;
 
+  // 각 탭별 설정 정보
   const tabConfig = {
     written: {
       title: '내가 작성한 요청',
@@ -161,9 +268,9 @@ const MyPage = () => {
       fetchNextPage: fetchNextFunding,
       isFetchingNextPage: isFetchingNextFunding,
     },
-  };
+  } as const; // 타입 안전성을 위해 const assertion 사용
 
-  // 인증되지 않은 경우 로그인 유도 UI 표시
+  // 비로그인 상태일 때 로그인 유도 UI 표시
   if (!isAuthenticated || !userInfo) {
     return (
       <div className="max-w-2xl mx-auto py-6 px-4">
@@ -185,20 +292,21 @@ const MyPage = () => {
     );
   }
 
+  /**
+   * 요청 목록을 렌더링하는 함수
+   * 현재 선택된 탭에 따라 적절한 데이터를 표시합니다
+   */
   const renderRequests = () => {
-    const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-      tabConfig[activeTab];
+    const currentTab = tabConfig[activeTab as keyof typeof tabConfig];
 
-    if (isLoading) {
+    if (currentTab.isLoading) {
       return <div className="text-center py-4">로딩 중...</div>;
     }
 
-    if (data?.pages[0].content.length === 0) {
+    if (!currentTab.data?.pages[0].content.length) {
       return (
         <div className="text-center py-4 text-gray-500">
-          {activeTab === 'written'
-            ? '작성한 요청이 없습니다.'
-            : '수행한 요청이 없습니다.'}
+          {`${currentTab.title}이 없습니다.`}
         </div>
       );
     }
@@ -206,7 +314,7 @@ const MyPage = () => {
     return (
       <>
         <div className="space-y-4">
-          {data?.pages.map((page) =>
+          {currentTab.data.pages.map((page) =>
             page.content.map((request) => (
               <RequestCard
                 key={request.id}
@@ -237,20 +345,19 @@ const MyPage = () => {
           )}
         </div>
 
-        {hasNextPage && (
+        {currentTab.hasNextPage && (
           <button
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
+            onClick={() => currentTab.fetchNextPage()}
+            disabled={currentTab.isFetchingNextPage}
             className="w-full mt-4 py-2 text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg transition-colors"
           >
-            {isFetchingNextPage ? '로딩 중...' : '더 보기'}
+            {currentTab.isFetchingNextPage ? '로딩 중...' : '더 보기'}
           </button>
         )}
       </>
     );
   };
 
-  // 인증된 경우 마이페이지 컨텐츠 표시
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
@@ -289,7 +396,7 @@ const MyPage = () => {
                 {userInfo.point.toLocaleString()} P
               </span>
               <button
-                onClick={handleChargePoint} // 위에서 정의한 handleChargePoint 함수 사용
+                onClick={handleChargePoint}
                 className="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
               >
                 충전하기
@@ -299,77 +406,70 @@ const MyPage = () => {
         </div>
 
         {/* 활동 통계 섹션 */}
-        <div className="p-6 bg-gray-50 dark:bg-gray-900">
+        <div className="p-6 bg-white dark:bg-gray-800">
           <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
             활동 통계
           </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div
-              onClick={() => setActiveTab('written')}
-              className="cursor-pointer"
-            >
-              <StatCard
-                label="작성한 요청"
-                value={isLoading ? '로딩 중...' : totalPosts}
-              />
-            </div>
-            <div
-              onClick={() => setActiveTab('accepted')}
-              className="cursor-pointer"
-            >
-              <StatCard
-                label="수행한 요청"
-                value={isLoadingAccepted ? '로딩 중...' : totalAccepted}
-              />
-            </div>
-            <div
-              onClick={() => setActiveTab('funding')}
-              className="cursor-pointer"
-            >
-              <StatCard
-                label="펀딩중인 요청"
-                value={isLoadingAccepted ? '로딩 중...' : totalFunding}
-              />
-            </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              {
+                id: 'written',
+                label: '작성한 요청',
+                value: totalPosts,
+                loading: isLoading,
+              },
+              {
+                id: 'accepted',
+                label: '수행한 요청',
+                value: totalAccepted,
+                loading: isLoadingAccepted,
+              },
+              {
+                id: 'funding',
+                label: '펀딩중인 요청',
+                value: totalFunding,
+                loading: isLoadingFunding,
+              },
+            ].map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleTabChange(item.id as TabType)}
+                className="cursor-pointer"
+              >
+                <StatCard
+                  label={item.label}
+                  value={item.loading ? '로딩 중...' : item.value}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
       {/* 요청 목록 섹션 */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+        {/* 탭 버튼 영역 */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 mb-4">
-          <button
-            className={`py-2 px-4 ${
-              activeTab === 'written'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
-            }`}
-            onClick={() => setActiveTab('written')}
-          >
-            내가 작성한 요청
-          </button>
-          <button
-            className={`py-2 px-4 ${
-              activeTab === 'accepted'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
-            }`}
-            onClick={() => setActiveTab('accepted')}
-          >
-            내가 수행한 요청
-          </button>
-          <button
-            className={`py-2 px-4 ${
-              activeTab === 'funding'
-                ? 'border-b-2 border-blue-500 text-blue-600'
-                : 'text-gray-500'
-            }`}
-            onClick={() => setActiveTab('funding')}
-          >
-            내가 펀딩중인 요청
-          </button>
+          {[
+            { id: 'written', label: '내가 작성한 요청' },
+            { id: 'accepted', label: '내가 수행한 요청' },
+            { id: 'funding', label: '내가 펀딩중인 요청' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              className={`py-2 px-4 ${
+                activeTab === tab.id
+                  ? 'border-b-2 border-blue-500 text-blue-600'
+                  : 'text-gray-500'
+              }`}
+              onClick={() => handleTabChange(tab.id as TabType)}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
+        {/* 요청 목록 표시 영역 */}
         {renderRequests()}
       </div>
     </div>
