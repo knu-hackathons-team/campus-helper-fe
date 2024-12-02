@@ -1,15 +1,15 @@
-// src/pages/Request/Create/index.tsx
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from '@emotion/styled';
 import { requestApi } from '@/api/request';
 import type { CreateRequestDto, RequestCategory } from '@/api/request/types';
-import { ApiError } from '@/api/lib/axios'; // ApiError import 추가
+import { ApiError } from '@/api/lib/axios';
 import useAuthStore from '@/store/useAuthStore';
+import useToast from '@/hooks/useToast';
 import LocationSelectMapComponent from '@/components/common/Map/LocationSelectMapComponent';
 import type { Location } from '@/types/Location';
 import { RequestFormData, DEFAULT_FORM_DATA } from './types';
-import { useQueryClient } from '@tanstack/react-query'; // 추가
+import { useQueryClient } from '@tanstack/react-query';
 
 const FormField = styled.div`
   margin-bottom: 1.5rem;
@@ -17,52 +17,65 @@ const FormField = styled.div`
 
 const RequestCreate = () => {
   const navigate = useNavigate();
+  const toast = useToast();
   const { isAuthenticated } = useAuthStore();
   const [currentLocation, setCurrentLocation] = useState<Location | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<RequestFormData>(DEFAULT_FORM_DATA);
-  const queryClient = useQueryClient(); // 추가
+  const queryClient = useQueryClient();
 
-  // onLocationSelect 함수를 useCallback으로 감싸기
   const handleLocationSelect = useCallback((location: Location) => {
     setCurrentLocation(location);
-    setError(null);
-  }, []); // 의존성 배열이 비어있으므로 함수가 재생성되지 않음
+  }, []);
 
-  // index.tsx에 에러 처리 함수 추가
   const handleError = (error: unknown) => {
-    // error 타입을 unknown으로 지정
     if (error instanceof ApiError) {
-      setError(error.message);
+      toast.error(error.message);
     } else if (error instanceof Error) {
-      // 일반적인 Error 객체도 처리
-      setError(error.message);
+      toast.error(error.message);
     } else {
-      setError('요청 생성 중 오류가 발생했습니다.');
+      toast.error('요청 생성 중 오류가 발생했습니다.');
     }
     console.error('Failed to create request:', error);
   };
 
   const validateForm = () => {
     if (!isAuthenticated) {
-      setError('로그인이 필요합니다.');
+      toast.warning('로그인이 필요합니다.');
       return false;
     }
     if (!currentLocation) {
-      setError('위치를 선택해주세요.');
+      toast.warning('위치를 선택해주세요.');
       return false;
     }
     if (!formData.title.trim()) {
-      setError('제목을 입력해주세요.');
+      toast.warning('제목을 입력해주세요.');
+      (
+        document.querySelector('input[name="title"]') as HTMLInputElement
+      )?.focus();
       return false;
     }
     if (!formData.content.trim()) {
-      setError('내용을 입력해주세요.');
+      toast.warning('내용을 입력해주세요.');
+      (
+        document.querySelector(
+          'textarea[name="content"]',
+        ) as HTMLTextAreaElement
+      )?.focus();
       return false;
     }
     if (!formData.reward || parseInt(formData.reward) < 100) {
-      setError('올바른 보상금을 입력해주세요. (최소 100)');
+      toast.warning('올바른 보상금을 입력해주세요. (최소 100)');
+      (
+        document.querySelector('input[name="reward"]') as HTMLInputElement
+      )?.focus();
+      return false;
+    }
+    if (!formData.ramaningTime || parseInt(formData.ramaningTime) < 600) {
+      toast.warning('지속 시간은 최소 600초 이상이어야 합니다.');
+      (
+        document.querySelector('input[name="ramaningTime"]') as HTMLInputElement
+      )?.focus();
       return false;
     }
     return true;
@@ -86,7 +99,8 @@ const RequestCreate = () => {
       };
 
       await requestApi.createRequest(requestData);
-      await queryClient.invalidateQueries({ queryKey: ['requests'] }); // 추가
+      await queryClient.invalidateQueries({ queryKey: ['requests'] });
+      toast.success('요청이 성공적으로 생성되었습니다.');
       navigate('/requests');
     } catch (error) {
       handleError(error);
@@ -95,19 +109,12 @@ const RequestCreate = () => {
     }
   };
 
-  // Form JSX remains mostly the same, but with improved error handling
   return (
     <div className="max-w-2xl mx-auto py-6 px-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
         <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
           새 요청 작성
         </h1>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Category Select */}
@@ -137,12 +144,13 @@ const RequestCreate = () => {
             </label>
             <input
               type="text"
+              name="title"
               value={formData.title}
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-              required
+              // required 제거
             />
           </FormField>
 
@@ -152,12 +160,13 @@ const RequestCreate = () => {
               내용
             </label>
             <textarea
+              name="content"
               value={formData.content}
               onChange={(e) =>
                 setFormData({ ...formData, content: e.target.value })
               }
               className="w-full p-2 border rounded-lg h-32 resize-none bg-white dark:bg-gray-700 dark:border-gray-600"
-              required
+              // required 속성 제거
             />
           </FormField>
 
@@ -171,13 +180,13 @@ const RequestCreate = () => {
             </label>
             <input
               type="number"
+              name="reward"
               value={formData.reward}
               onChange={(e) =>
                 setFormData({ ...formData, reward: e.target.value })
               }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-              min="100"
-              required
+              // min과 required 제거
             />
           </FormField>
 
@@ -188,13 +197,13 @@ const RequestCreate = () => {
             </label>
             <input
               type="number"
+              name="ramaningTime"
               value={formData.ramaningTime}
               onChange={(e) =>
                 setFormData({ ...formData, ramaningTime: e.target.value })
               }
               className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-              min="600"
-              required
+              // min과 required 제거
             />
           </FormField>
 
@@ -222,7 +231,10 @@ const RequestCreate = () => {
           <div className="flex justify-end gap-3">
             <button
               type="button"
-              onClick={() => navigate('/requests')}
+              onClick={() => {
+                toast.info('작성을 취소하고 목록으로 돌아갑니다.');
+                navigate('/requests');
+              }}
               className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               disabled={isSubmitting}
             >

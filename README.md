@@ -165,11 +165,16 @@ campus-helper-fe
 │  │  │  │  ├─ BaseMapComponent.tsx
 │  │  │  │  ├─ LocationSelectMapComponent.tsx
 │  │  │  │  └─ RouteMapComponent.tsx
-│  │  │  └─ Request
+│  │  │  ├─ Request
+│  │  │  │  ├─ index.ts
+│  │  │  │  ├─ RequestBadge.tsx
+│  │  │  │  ├─ RequestCard.tsx
+│  │  │  │  └─ RequestInfo.tsx
+│  │  │  └─ Toast
 │  │  │     ├─ index.ts
-│  │  │     ├─ RequestBadge.tsx
-│  │  │     ├─ RequestCard.tsx
-│  │  │     └─ RequestInfo.tsx
+│  │  │     ├─ ToastContainer.tsx
+│  │  │     ├─ ToastMessage.tsx
+│  │  │     └─ types.ts
 │  │  ├─ Layout
 │  │  │  ├─ Navbar.tsx
 │  │  │  └─ RootLayout.tsx
@@ -185,7 +190,8 @@ campus-helper-fe
 │  │     └─ UserInfoUpdater.tsx
 │  ├─ hooks
 │  │  ├─ useDistance.ts
-│  │  └─ useRequest.ts
+│  │  ├─ useRequest.ts
+│  │  └─ useToast.ts
 │  ├─ index.css
 │  ├─ main.tsx
 │  ├─ mocks
@@ -212,7 +218,8 @@ campus-helper-fe
 │  │        └─ index.tsx
 │  ├─ store
 │  │  ├─ useAuthStore.ts
-│  │  └─ useThemeStore.ts
+│  │  ├─ useThemeStore.ts
+│  │  └─ useToastStore.ts
 │  ├─ types
 │  │  ├─ common
 │  │  │  └─ index.ts

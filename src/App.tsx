@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import RootLayout from './components/Layout/RootLayout';
 import UserInfoUpdater from './components/user/UserInfoUpdater';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // 새로 추가
+import { ToastContainer } from '@/components/common/Toast';
 
 import Home from './pages/Home';
 import RequestList from './pages/Request/List';
@@ -22,40 +23,43 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      {' '}
-      {/* 최상위에 추가 */}
-      <BrowserRouter>
-        <UserInfoUpdater />
-        <div
-          style={{ height: '100vh' }}
-          className="bg-gray-100 dark:bg-gray-900 transition-colors pt-16"
-        >
-          <Navbar />
-          <RootLayout>
-            <Routes>
-              {/* 메인 */}
-              <Route path="/" element={<Home />} />
+    <>
+      <QueryClientProvider client={queryClient}>
+        {' '}
+        {/* 최상위에 추가 */}
+        <BrowserRouter>
+          <UserInfoUpdater />
+          <div
+            style={{ height: '100vh' }}
+            className="bg-gray-100 dark:bg-gray-900 transition-colors pt-16"
+          >
+            <Navbar />
+            <RootLayout>
+              <Routes>
+                {/* 메인 */}
+                <Route path="/" element={<Home />} />
 
-              {/* 인증 */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
+                {/* 인증 */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
 
-              {/* 요청 관련 */}
-              <Route path="/requests" element={<RequestList />} />
-              <Route path="/requests/:id" element={<RequestDetail />} />
-              <Route path="/requests/new" element={<RequestCreate />} />
+                {/* 요청 관련 */}
+                <Route path="/requests" element={<RequestList />} />
+                <Route path="/requests/:id" element={<RequestDetail />} />
+                <Route path="/requests/new" element={<RequestCreate />} />
 
-              {/* 마이페이지 */}
-              <Route path="/mypage" element={<MyPage />} />
+                {/* 마이페이지 */}
+                <Route path="/mypage" element={<MyPage />} />
 
-              {/* 최상위에 추가 */}
-              <Route path="/notifications" element={<Notifications />} />
-            </Routes>
-          </RootLayout>
-        </div>
-      </BrowserRouter>
-    </QueryClientProvider>
+                {/* 최상위에 추가 */}
+                <Route path="/notifications" element={<Notifications />} />
+              </Routes>
+            </RootLayout>
+          </div>
+        </BrowserRouter>
+      </QueryClientProvider>
+      <ToastContainer />
+    </>
   );
 }
 
