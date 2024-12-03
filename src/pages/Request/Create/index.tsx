@@ -130,7 +130,7 @@ const RequestCreate = () => {
                   category: e.target.value as RequestCategory,
                 })
               }
-              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             >
               <option value="HELP">도움 요청</option>
               <option value="INFO">정보 요청</option>
@@ -149,8 +149,7 @@ const RequestCreate = () => {
               onChange={(e) =>
                 setFormData({ ...formData, title: e.target.value })
               }
-              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
-              // required 제거
+              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
             />
           </FormField>
 
@@ -165,7 +164,7 @@ const RequestCreate = () => {
               onChange={(e) =>
                 setFormData({ ...formData, content: e.target.value })
               }
-              className="w-full p-2 border rounded-lg h-32 resize-none bg-white dark:bg-gray-700 dark:border-gray-600"
+              className="w-full p-2 border rounded-lg h-32 resize-none bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               // required 속성 제거
             />
           </FormField>
@@ -185,7 +184,7 @@ const RequestCreate = () => {
               onChange={(e) =>
                 setFormData({ ...formData, reward: e.target.value })
               }
-              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               // min과 required 제거
             />
           </FormField>
@@ -202,7 +201,7 @@ const RequestCreate = () => {
               onChange={(e) =>
                 setFormData({ ...formData, ramaningTime: e.target.value })
               }
-              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600"
+              className="w-full p-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
               // min과 required 제거
             />
           </FormField>
