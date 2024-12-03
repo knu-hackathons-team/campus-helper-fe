@@ -2,40 +2,22 @@
 import React, { useEffect, useState } from 'react';
 import { Marker, useMapEvents } from 'react-leaflet';
 import BaseMapComponent, { createIcon } from './BaseMapComponent';
+import { useLocation } from '@/hooks/useLocation';
 
 interface LocationSelectProps {
   onLocationSelect: (location: { latitude: number; longitude: number }) => void;
 }
 
-const LocationSelectMapComponent: React.FC<LocationSelectProps> = React.memo(({ onLocationSelect }) => {  // React.memo 추가
-  const [currentLocation, setCurrentLocation] = useState<[number, number] | null>(null);
+const LocationSelectMapComponent: React.FC<LocationSelectProps> = React.memo(({ onLocationSelect }) => {
+  const { currentLocation, isLoading, error } = useLocation();
   const [selectedLocation, setSelectedLocation] = useState<[number, number] | null>(null);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([35.8892, 128.6109]); // 초기 중심점
-  const [error, setError] = useState<string>('');
+  const [mapCenter, setMapCenter] = useState<[number, number]>([35.8892, 128.6109]);
 
-  // 현재 위치 가져오기
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setCurrentLocation([latitude, longitude]);
-          // 처음에만 현재 위치로 중심 이동
-          if (!selectedLocation) {
-            setMapCenter([latitude, longitude]);
-          }
-        },
-        (error) => {
-          setError('위치를 가져올 수 없습니다: ' + error.message);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        }
-      );
+    if (currentLocation && !selectedLocation) {
+      setMapCenter([currentLocation.latitude, currentLocation.longitude]);
     }
-  }, [selectedLocation]);
+  }, [currentLocation, selectedLocation]);
 
   // 지도 클릭 이벤트 처리
   const MapEvents = () => {
@@ -43,7 +25,7 @@ const LocationSelectMapComponent: React.FC<LocationSelectProps> = React.memo(({ 
       click(e) {
         const { lat, lng } = e.latlng;
         setSelectedLocation([lat, lng]);
-        setMapCenter([lat, lng]); // 클릭한 위치로 중심 이동
+        setMapCenter([lat, lng]);
         onLocationSelect({ latitude: lat, longitude: lng });
       },
     });
@@ -61,7 +43,7 @@ const LocationSelectMapComponent: React.FC<LocationSelectProps> = React.memo(({ 
         <MapEvents />
         {currentLocation && (
           <Marker 
-            position={currentLocation} 
+            position={[currentLocation.latitude, currentLocation.longitude]} 
             icon={createIcon('blue')}
             title="현재 위치"
           />

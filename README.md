@@ -110,7 +110,6 @@ Campus Helper는 캠퍼스 내에서 실시간 정보나 즉각적인 도움이 
 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
 
-
 ```
 campus-helper-fe
 ├─ .eslintrc.cjs
@@ -190,6 +189,7 @@ campus-helper-fe
 │  │     └─ UserInfoUpdater.tsx
 │  ├─ hooks
 │  │  ├─ useDistance.ts
+│  │  ├─ useLocation.ts
 │  │  ├─ useRequest.ts
 │  │  └─ useToast.ts
 │  ├─ index.css
