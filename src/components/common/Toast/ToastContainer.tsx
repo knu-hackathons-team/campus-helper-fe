@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import useToastStore from '@/store/useToastStore';
 import ToastMessage from './ToastMessage';
 
+// 토스트 메시지들의 위치와 레이아웃을 관리
 const ToastContainer: React.FC = () => {
   const toasts = useToastStore((state) => state.toasts);
 

@@ -5,6 +5,7 @@ import useToastStore from '@/store/useToastStore';
 
 interface ToastMessageProps extends Toast {}
 
+// 개별 토스트 메시지의 스타일과 기능을 담당
 const ToastMessage: React.FC<ToastMessageProps> = ({
   id,
   message,
@@ -19,11 +20,10 @@ const ToastMessage: React.FC<ToastMessageProps> = ({
       removeToast(id);
     }, duration);
 
-    // 60fps에 가까운 부드러운 업데이트를 위해 16ms 간격 사용
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev <= 0) return 0;
-        return prev - (16 / duration) * 100; // 16ms마다 감소량 계산
+        return prev - (16 / duration) * 100;
       });
     }, 16);
 
@@ -41,24 +41,24 @@ const ToastMessage: React.FC<ToastMessageProps> = ({
   };
 
   const styles = {
-    success: 'bg-white text-gray-800',
-    error: 'bg-white text-gray-800',
-    info: 'bg-white text-gray-800',
-    warning: 'bg-white text-gray-800',
+    success: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+    error: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+    info: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
+    warning: 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100',
   };
 
   const progressStyles = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
-    warning: 'bg-yellow-500',
+    success: 'bg-green-500 dark:bg-green-600',
+    error: 'bg-red-500 dark:bg-red-600',
+    info: 'bg-blue-500 dark:bg-blue-600',
+    warning: 'bg-yellow-500 dark:bg-yellow-600',
   };
 
   const iconContainerStyles = {
-    success: 'text-green-500',
-    error: 'text-red-500',
-    info: 'text-blue-500',
-    warning: 'text-yellow-500',
+    success: 'text-green-500 dark:text-green-400',
+    error: 'text-red-500 dark:text-red-400',
+    info: 'text-blue-500 dark:text-blue-400',
+    warning: 'text-yellow-500 dark:text-yellow-400',
   };
 
   return (
@@ -75,7 +75,7 @@ const ToastMessage: React.FC<ToastMessageProps> = ({
         </div>
         <button
           onClick={() => removeToast(id)}
-          className="ml-4 -mr-1 text-gray-400 hover:text-gray-900 transition-colors"
+          className="ml-4 -mr-1 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-gray-100 transition-colors"
           aria-label="닫기"
         >
           <X className="w-6 h-6" />
