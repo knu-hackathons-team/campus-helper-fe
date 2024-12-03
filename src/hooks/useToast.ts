@@ -8,38 +8,42 @@ const useToast = () => {
   const { addToast } = useToastStore();
 
   const showToast = useCallback(
-    (message: string, type: ToastType = 'info', duration = DEFAULT_DURATION) => {
+    (
+      message: string,
+      type: ToastType = 'info',
+      duration = DEFAULT_DURATION,
+    ) => {
       addToast({ message, type, duration });
     },
-    [addToast]
+    [addToast],
   );
 
   const success = useCallback(
     (message: string, duration?: number) => {
       showToast(message, 'success', duration);
     },
-    [showToast]
+    [showToast],
   );
 
   const error = useCallback(
     (message: string, duration?: number) => {
       showToast(message, 'error', duration);
     },
-    [showToast]
+    [showToast],
   );
 
   const info = useCallback(
     (message: string, duration?: number) => {
       showToast(message, 'info', duration);
     },
-    [showToast]
+    [showToast],
   );
 
   const warning = useCallback(
     (message: string, duration?: number) => {
       showToast(message, 'warning', duration);
     },
-    [showToast]
+    [showToast],
   );
 
   return { showToast, success, error, info, warning };

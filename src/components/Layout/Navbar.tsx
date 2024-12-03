@@ -3,6 +3,7 @@ import styled from '@emotion/styled';
 import { Menu, X, Home, Bell, User, Sun, Moon, LogOut, MapPin } from 'lucide-react';
 import { useThemeStore } from '@/store/useThemeStore';
 import useAuthStore from '@/store/useAuthStore';
+import { Link, useNavigate } from 'react-router-dom';
 
 const NavContainer = styled.nav`
   position: fixed;
@@ -22,6 +23,7 @@ const ThemeButton = styled.button`
 `;
 
 const Navbar = () => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { isDarkMode, toggleDarkMode } = useThemeStore();
   
@@ -31,19 +33,19 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    window.location.reload();
+    navigate('/');
   };
 
   // 인증된 사용자를 위한 메뉴 아이템들
   const AuthenticatedMenuItems = () => (
     <>
-      <a href="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+      <Link to="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
         <Bell className="w-5 h-5" />
-      </a>
-      <a href="/mypage" className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+      </Link>
+      <Link to="/mypage" className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
         <User className="w-5 h-5" />
         <span className="text-sm font-medium">{userInfo?.nickname}</span>
-      </a>
+      </Link>
       <button
         onClick={handleLogout}
         className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
@@ -56,25 +58,25 @@ const Navbar = () => {
 
   // 비인증 사용자를 위한 메뉴 아이템
   const UnauthenticatedMenuItems = () => (
-    <a href="/login" className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+    <Link to="/login" className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
       <User className="w-5 h-5" />
       <span className="text-sm font-medium">로그인</span>
-    </a>
+    </Link>
   );
 
   // 공통 메뉴 아이템 (모든 사용자가 접근 가능)
   const CommonMenuItems = () => (
     <>
-      <a href="/" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+      <Link to="/" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
         <Home className="w-5 h-5" />
-      </a>
-      <a 
-        href="/requests" 
+      </Link>
+      <Link 
+        to="/requests" 
         className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
       >
         <MapPin className="w-5 h-5" />
         <span className="text-sm font-medium">근처 요청</span>
-      </a>
+      </Link>
     </>
   );
 
@@ -82,9 +84,9 @@ const Navbar = () => {
     <NavContainer className="bg-white dark:bg-gray-800">
       {/* PC/태블릿 네비게이션 */}
       <div className="hidden md:flex justify-between items-center max-w-7xl mx-auto px-4 h-16">
-        <a href="/" className="text-xl font-bold text-gray-900 dark:text-gray-100">
+        <Link to="/" className="text-xl font-bold text-gray-900 dark:text-gray-100">
           Campus Helper
-        </a>
+        </Link>
         <div className="flex items-center gap-4">
           <CommonMenuItems />
           {isAuthenticated ? <AuthenticatedMenuItems /> : <UnauthenticatedMenuItems />}
@@ -101,9 +103,9 @@ const Navbar = () => {
       {/* 모바일 네비게이션 */}
       <div className="md:hidden">
         <div className="flex justify-between items-center px-4 h-14">
-          <a href="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          <Link to="/" className="text-lg font-bold text-gray-900 dark:text-gray-100">
             Campus Helper
-          </a>
+          </Link>
           <div className="flex items-center gap-2">
             <ThemeButton
               onClick={toggleDarkMode}
@@ -126,27 +128,27 @@ const Navbar = () => {
         {isOpen && (
           <div className="absolute top-14 left-0 right-0 bg-white dark:bg-gray-900 border-t dark:border-gray-800">
             <div className="flex flex-col p-4">
-              <a href="/" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+              <Link to="/" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                 <Home className="w-5 h-5" />
                 <span>홈</span>
-              </a>
-              <a 
-                href="/requests" 
+              </Link>
+              <Link 
+                to="/requests" 
                 className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2"
               >
                 <MapPin className="w-5 h-5" />
                 <span>근처 요청</span>
-              </a>
+              </Link>
               {isAuthenticated ? (
                 <>
-                  <a href="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                  <Link to="/notifications" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                     <Bell className="w-5 h-5" />
                     <span>알림</span>
-                  </a>
-                  <a href="/mypage" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                  </Link>
+                  <Link to="/mypage" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                     <User className="w-5 h-5" />
                     <span>프로필</span>
-                  </a>
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2"
@@ -156,10 +158,10 @@ const Navbar = () => {
                   </button>
                 </>
               ) : (
-                <a href="/login" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
+                <Link to="/login" className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2">
                   <User className="w-5 h-5" />
                   <span>로그인</span>
-                </a>
+                </Link>
               )}
             </div>
           </div>
