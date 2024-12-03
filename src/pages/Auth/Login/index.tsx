@@ -5,8 +5,9 @@ import styled from '@emotion/styled';
 import { css } from '@emotion/react';
 import useAuthStore from '../../../store/useAuthStore';
 import { authApi } from '@/api/auth';
-import type { LoginFormData } from '@/api/auth/types'; // LoginFormData 타입도 auth 도메인으로 이동
+import type { LoginFormData } from '@/api/auth/types';
 import { ApiError } from '@/api/lib/axios';
+import useToast from '@/hooks/useToast';
 
 const FormContainer = styled.div`
   max-width: 400px;
@@ -27,6 +28,7 @@ const inputStyle = css`
 
 function Login() {
   const navigate = useNavigate();
+  const toast = useToast();
   const setToken = useAuthStore((state) => state.setToken);
   const fetchUserInfo = useAuthStore((state) => state.fetchUserInfo);
 
@@ -34,19 +36,32 @@ function Login() {
     loginId: '',
     password: '',
   });
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
+  const validateForm = (): boolean => {
+    if (!formData.loginId.trim()) {
+      toast.warning('아이디를 입력해주세요.');
+      return false;
+    }
+
+    if (!formData.password) {
+      toast.warning('비밀번호를 입력해주세요.');
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    
+    if (!validateForm()) return;
 
     try {
       setIsLoading(true);
 
       const response = await authApi.login(formData);
 
-      // 개발 환경에서만 로그 출력
       if (process.env.NODE_ENV === 'development') {
         console.log('로그인 응답:', response);
       }
@@ -60,15 +75,16 @@ function Login() {
 
         await fetchUserInfo();
         navigate('/');
+        toast.success('로그인되었습니다.');
       } else {
-        setError('로그인에 실패했습니다. 다시 시도해주세요.');
+        toast.error('로그인에 실패했습니다. 다시 시도해주세요.');
       }
     } catch (err) {
       if (err instanceof ApiError) {
-        setError(err.message || '로그인에 실패했습니다. 다시 시도해주세요.');
+        toast.error(err.message || '로그인에 실패했습니다. 다시 시도해주세요.');
         console.error('로그인 에러:', err.data);
       } else {
-        setError('로그인에 실패했습니다. 다시 시도해주세요.');
+        toast.error('로그인에 실패했습니다. 다시 시도해주세요.');
         console.error('로그인 에러:', err);
       }
     } finally {
@@ -93,12 +109,6 @@ function Login() {
             로그인
           </h2>
 
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
@@ -110,7 +120,6 @@ function Login() {
               <input
                 id="loginId"
                 type="text"
-                required
                 css={inputStyle}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                 value={formData.loginId}
@@ -129,7 +138,6 @@ function Login() {
               <input
                 id="password"
                 type="password"
-                required
                 css={inputStyle}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                 value={formData.password}
