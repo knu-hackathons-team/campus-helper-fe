@@ -110,6 +110,7 @@ Campus Helper는 캠퍼스 내에서 실시간 정보나 즉각적인 도움이 
 
 참고: .env 파일 만든 후 티맵키 자기꺼 등록 후 사용
 
+
 ```
 campus-helper-fe
 ├─ .eslintrc.cjs
@@ -169,11 +170,12 @@ campus-helper-fe
 │  │  │  │  ├─ RequestBadge.tsx
 │  │  │  │  ├─ RequestCard.tsx
 │  │  │  │  └─ RequestInfo.tsx
-│  │  │  └─ Toast
-│  │  │     ├─ index.ts
-│  │  │     ├─ ToastContainer.tsx
-│  │  │     ├─ ToastMessage.tsx
-│  │  │     └─ types.ts
+│  │  │  ├─ Toast
+│  │  │  │  ├─ index.ts
+│  │  │  │  ├─ ToastContainer.tsx
+│  │  │  │  ├─ ToastMessage.tsx
+│  │  │  │  └─ types.ts
+│  │  │  └─ WithdrawModal.tsx
 │  │  ├─ Layout
 │  │  │  ├─ Navbar.tsx
 │  │  │  └─ RootLayout.tsx

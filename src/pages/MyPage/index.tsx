@@ -9,6 +9,7 @@ import { mypageApi } from '@/api/mypage';
 import { fundingApi } from '@/api/funding';
 import styled from '@emotion/styled';
 import { useState } from 'react';
+import WithdrawModal from '@/components/common/WithdrawModal';
 
 // 파일 최상단 import 문 아래에 추가
 interface BaseRequest {
@@ -154,6 +155,9 @@ const MyPage = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const userInfo = useAuthStore((state) => state.userInfo);
 
+  // 출금 모달
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+
   /**
    * 탭 변경 처리 함수
    * 탭을 변경하고 URL도 함께 업데이트합니다
@@ -174,6 +178,16 @@ const MyPage = () => {
     } catch (error) {
       console.error('포인트 조회 실패:', error);
     }
+  };
+
+  // 포인트 출금 모달을 여는 함수
+  const handleOpenWithdrawModal = () => {
+    setIsWithdrawModalOpen(true);
+  };
+
+  // 포인트 출금 모달을 닫는 함수
+  const handleCloseWithdrawModal = () => {
+    setIsWithdrawModalOpen(false);
   };
 
   // 내 요청 목록 조회
@@ -215,7 +229,7 @@ const MyPage = () => {
     enabled: isAuthenticated,
   });
 
-  // 내가 펀딩중인 요청 목록 조회
+  // 내가 공동요청중인 요청 목록 조회
   const {
     data: fundingData,
     fetchNextPage: fetchNextFunding,
@@ -261,7 +275,7 @@ const MyPage = () => {
       isFetchingNextPage: isFetchingNextAccepted,
     },
     funding: {
-      title: '내가 펀딩중인 요청',
+      title: '내가 함께하는 공동요청',
       data: fundingData,
       isLoading: isLoadingFunding,
       hasNextPage: hasNextFunding,
@@ -395,14 +409,27 @@ const MyPage = () => {
               <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
                 {userInfo.point.toLocaleString()} P
               </span>
-              <button
-                onClick={handleChargePoint}
-                className="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                충전하기
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleChargePoint}
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  충전하기
+                </button>
+                <button
+                  onClick={handleOpenWithdrawModal}
+                  className="px-4 py-1.5 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  출금하기
+                </button>
+              </div>
             </div>
           </div>
+
+          <WithdrawModal
+            isOpen={isWithdrawModalOpen}
+            onClose={() => setIsWithdrawModalOpen(false)}
+            />
         </div>
 
         {/* 활동 통계 섹션 */}
@@ -426,7 +453,7 @@ const MyPage = () => {
               },
               {
                 id: 'funding',
-                label: '펀딩중인 요청',
+                label: '함께하는 공동요청',
                 value: totalFunding,
                 loading: isLoadingFunding,
               },
@@ -453,7 +480,7 @@ const MyPage = () => {
           {[
             { id: 'written', label: '내가 작성한 요청' },
             { id: 'accepted', label: '내가 수행한 요청' },
-            { id: 'funding', label: '내가 펀딩중인 요청' },
+            { id: 'funding', label: '내가 함께하는 공동요청' },
           ].map((tab) => (
             <button
               key={tab.id}

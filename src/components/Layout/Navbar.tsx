@@ -75,7 +75,7 @@ const Navbar = () => {
         className="flex items-center gap-2 p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
       >
         <MapPin className="w-5 h-5" />
-        <span className="text-sm font-medium">근처 요청</span>
+        <span className="text-sm font-medium">근처 요청 목록</span>
       </Link>
     </>
   );
@@ -137,7 +137,7 @@ const Navbar = () => {
                 className="p-2 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg flex items-center gap-2"
               >
                 <MapPin className="w-5 h-5" />
-                <span>근처 요청</span>
+                <span>근처 요청 목록</span>
               </Link>
               {isAuthenticated ? (
                 <>

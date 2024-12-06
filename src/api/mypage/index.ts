@@ -10,4 +10,10 @@ export const mypageApi = {
     return response.data;
   },
 
+  withdrawPoint: async (point: number) => {
+    const response = await axiosInstance.post(MYPAGE_ENDPOINTS.WITHDRAW_POINT, {
+      point: point // 출금할 포인트 양을 body에 포함
+    });
+    return response.data;
+  },
 };

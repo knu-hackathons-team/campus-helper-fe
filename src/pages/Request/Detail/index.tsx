@@ -185,15 +185,15 @@ const RequestDetail = () => {
   };
 
   const handleWithdrawFunding = async () => {
-    if (!request || !window.confirm('펀딩 참여를 취소하시겠습니까?')) return;
+    if (!request || !window.confirm('공동요청 참여를 취소하시겠습니까?')) return;
 
     try {
       await fundingApi.withdrawFunding(request.id);
-      toast.success('펀딩 참여가 취소되었습니다.');
+      toast.success('공동요청 참여가 취소되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['request', id] });
       window.location.reload();
     } catch (error) {
-      toast.error('펀딩 취소에 실패했습니다.');
+      toast.error('공동요청 취소에 실패했습니다.');
     }
   };
 
@@ -533,12 +533,12 @@ const RequestDetail = () => {
                         className="text-lime-600 dark:text-lime-400"
                       />
                       <h2 className="font-medium text-gray-900 dark:text-gray-100">
-                        펀딩 참여 상태
+                      공동요청 참여 상태
                       </h2>
                     </div>
                     <div className="flex items-center justify-between">
                       <p className="text-gray-600 dark:text-gray-300">
-                        이미 이 요청의 펀딩에 참여하셨습니다.
+                        이미 이 요청의 공동요청에 참여하셨습니다.
                       </p>
                       {request.processingStatus ===
                         ProcessingStatus.NOT_STARTED && (
@@ -546,7 +546,7 @@ const RequestDetail = () => {
                           onClick={handleWithdrawFunding}
                           className="px-4 py-1.5 text-sm bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 rounded-lg transition-colors duration-200"
                         >
-                          펀딩 취소
+                          공동요청 취소
                         </button>
                       )}
                     </div>
@@ -632,7 +632,7 @@ const RequestDetail = () => {
                               onClick={handleOpenJoinPanel}
                               className="px-6 py-2 bg-green-600 text-white rounded-lg"
                             >
-                              함께하기
+                              공동요청하기
                             </button>
                           )}
                         </>
