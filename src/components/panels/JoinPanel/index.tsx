@@ -50,7 +50,7 @@ const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
         </h2>
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <span className="text-gray-600 dark:text-gray-300">참여 금액</span>
+            <span className="text-gray-600 dark:text-gray-300">총 참여 금액</span>
             <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
               {request.reward.toLocaleString()}원
             </span>
@@ -79,7 +79,7 @@ const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
         </h3>
         <ul className="space-y-3">
           {[
-            `동일한 금액(${request.reward.toLocaleString()}원)으로 같은 도움을 받을 수 있습니다`,
+            `동일한 금액(${(request.reward / request.currentParticipants).toLocaleString()}원)으로 같은 도움을 받을 수 있습니다`,
             '요청이 완료되면 수행자의 도움을 함께 받을 수 있습니다',
             '수행 완료 시 모든 요청자에게 결과가 공유됩니다',
           ].map((benefit, index) => (
@@ -96,9 +96,9 @@ const JoinPanel = ({ request, onConfirm, onCancel }: JoinPanelProps) => {
       {/* 하단 액션 버튼 */}
       <div className="bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 mt-6 p-6 -mx-6 -mb-6">
         <div className="flex justify-between items-center mb-4">
-          <span className="text-gray-600 dark:text-gray-300">참여 금액</span>
+          <span className="text-gray-600 dark:text-gray-300"> 1인당 참여 금액</span>
           <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
-            {request.reward.toLocaleString()}원
+            {(request.reward / request.currentParticipants).toLocaleString()}원
           </span>
         </div>
         <div className="flex justify-end gap-3">
