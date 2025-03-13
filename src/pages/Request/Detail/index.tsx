@@ -185,7 +185,8 @@ const RequestDetail = () => {
   };
 
   const handleWithdrawFunding = async () => {
-    if (!request || !window.confirm('공동요청 참여를 취소하시겠습니까?')) return;
+    if (!request || !window.confirm('공동요청 참여를 취소하시겠습니까?'))
+      return;
 
     try {
       await fundingApi.withdrawFunding(request.id);
@@ -533,7 +534,7 @@ const RequestDetail = () => {
                         className="text-lime-600 dark:text-lime-400"
                       />
                       <h2 className="font-medium text-gray-900 dark:text-gray-100">
-                      공동요청 참여 상태
+                        공동요청 참여 상태
                       </h2>
                     </div>
                     <div className="flex items-center justify-between">
